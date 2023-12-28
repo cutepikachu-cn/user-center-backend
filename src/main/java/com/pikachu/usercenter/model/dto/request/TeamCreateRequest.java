@@ -4,6 +4,8 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
 import java.io.Serial;
@@ -21,7 +23,9 @@ public class TeamCreateRequest implements Serializable {
     private static final long serialVersionUID = 2441414884967522068L;
 
     @NotBlank(message = "队伍名称不能为空")
+    @Length(min = 5, max = 20, message = "队伍名称长度为5~20")
     private String name;
+    @Length(max = 512, message = "队伍长度为0~512")
     private String description;
     @Range(min = 2, max = 10, message = "队伍人数必须为2~10")
     private Integer maxNumber;
@@ -37,8 +41,8 @@ public class TeamCreateRequest implements Serializable {
         return status != 2 || (!StringUtils.isBlank(password) && password.matches("^[\\w-]{8,20}$"));
     }
 
-    @AssertTrue(message = "过期时间不能早于当前时间")
+    @AssertTrue(message = "过期时间至少为一天")
     public boolean isValidExpireTime() {
-        return expireTime.after(new Date());
+        return expireTime.after(DateUtils.addDays(new Date(), 1));
     }
 }

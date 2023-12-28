@@ -30,9 +30,6 @@ public class TeamController {
     public BaseResponse<TeamVO> createTeam(@RequestBody @Valid TeamCreateRequest teamCreateRequest,
                                            HttpServletRequest request) {
         TeamVO newTeam = teamService.createTeam(teamCreateRequest, request);
-        if (newTeam == null) {
-            return ResultUtils.error(ResponseCode.SYSTEM_ERROR, "创建队伍失败");
-        }
         return ResultUtils.success(newTeam, "创建队伍成功");
     }
 
@@ -56,7 +53,7 @@ public class TeamController {
     }
 
     @GetMapping("/get")
-    public BaseResponse<TeamVO> getTeam(@RequestParam Integer teamId) {
+    public BaseResponse<TeamVO> getTeam(@RequestParam Long teamId) {
         TeamVO teamVO = teamService.getTeamById(teamId);
         if (teamVO == null) {
             return ResultUtils.error(ResponseCode.PARAMS_ERROR, "获取队伍信息失败");
@@ -65,8 +62,8 @@ public class TeamController {
     }
 
     @GetMapping("/search")
-    public BaseResponse<IPage<TeamVO>> search(@RequestParam(defaultValue = "1") Integer current,
-                                             @RequestParam(defaultValue = "5") Integer size) {
+    public BaseResponse<IPage<TeamVO>> search(@RequestParam(defaultValue = "1") Long current,
+                                              @RequestParam(defaultValue = "5") Long size) {
         IPage<TeamVO> teamVOIPage = teamService.searchTeams(current, size);
         return ResultUtils.success(teamVOIPage);
     }

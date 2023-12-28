@@ -19,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
@@ -56,6 +57,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
+    @Transactional
     public Long userRegister(String account, String password, String checkPassword) {
         // 1. 校验
         if (StringUtils.isAnyBlank(account, password, checkPassword)) {
@@ -232,6 +234,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
+    @Transactional
     public boolean updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
         HttpSession session = request.getSession();
         LoginUserVO currentUser = (LoginUserVO) session.getAttribute(USER_LOGIN_STATE);

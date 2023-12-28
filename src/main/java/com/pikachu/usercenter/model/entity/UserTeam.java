@@ -29,7 +29,7 @@ public class UserTeam implements Serializable {
     /**
      * 队伍id
      */
-    private Integer teamId;
+    private Long teamId;
 
     /**
      * 加入时间
