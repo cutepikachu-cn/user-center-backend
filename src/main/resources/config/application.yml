@@ -22,8 +22,6 @@ server:
     session:
       cookie:
         domain: localhost
-        secure: true
-        same-site: none
       timeout: 1h
 
 mybatis-plus:

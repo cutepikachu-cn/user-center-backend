@@ -17,11 +17,11 @@ public interface TeamService extends IService<Team> {
 
     TeamVO createTeam(TeamCreateRequest teamCreateRequest, HttpServletRequest request);
 
-    boolean dismissTeam(Integer teamId, HttpServletRequest request);
+    void dismissTeam(Long teamId, HttpServletRequest request);
 
     TeamVO updateTeam(TeamUpdateRequest teamUpdateRequest, HttpServletRequest request);
 
-    TeamVO getTeamById(Long teamId);
+    TeamVO getTeamVOById(Long teamId);
 
     IPage<TeamVO> searchTeams(Long current, Long size);
 }

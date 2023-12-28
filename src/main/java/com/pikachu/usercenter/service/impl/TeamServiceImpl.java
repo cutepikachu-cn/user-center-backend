@@ -1,5 +1,6 @@
 package com.pikachu.usercenter.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -67,39 +68,52 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             throw new BusinessException(ResponseCode.SYSTEM_ERROR, "创建队伍失败");
         }
 
-        return getTeamById(team.getId());
+        return getTeamVOById(team.getId());
     }
 
     @Override
     @Transactional
-    public boolean dismissTeam(Integer teamId, HttpServletRequest request) {
+    public void dismissTeam(Long teamId, HttpServletRequest request) {
+        // 获取要解散的队伍
         Team team = getById(teamId);
         if (team == null) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍不存在");
         }
 
-        Long currentUserId = ((LoginUserVO) request.getSession().getAttribute(USER_LOGIN_STATE)).getId();
-        if (!currentUserId.equals(team.getUserId())) {
-            throw new BusinessException(ResponseCode.NO_AUTH);
+        // 是否有权解散
+        // 只能解散自己的队伍
+        checkActionAuth(team.getUserId(), request);
+
+        // 解散队伍
+        if (!removeById(teamId)) {
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "解散队伍失败");
         }
 
-        return removeById(teamId);
+        // 删除用户~队伍关系表中的关系数据
+        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("team_id", teamId);
+        if (!userTeamService.remove(queryWrapper)) {
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "解散队伍失败");
+        }
+
     }
 
     @Override
     @Transactional
     public TeamVO updateTeam(TeamUpdateRequest teamUpdateRequest, HttpServletRequest request) {
+        // 要修改信息的队伍是否存在
         Team team = getById(teamUpdateRequest.getId());
         if (team == null) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍不存在");
         }
-        Long currentUserId = ((LoginUserVO) request.getSession().getAttribute(USER_LOGIN_STATE)).getId();
-        if (!currentUserId.equals(team.getUserId())) {
-            throw new BusinessException(ResponseCode.NO_AUTH);
-        }
 
+        // 检查是否为自己的队伍
+        checkActionAuth(team.getUserId(), request);
+
+        // 拷贝要修改的信息
         BeanUtils.copyProperties(teamUpdateRequest, team);
 
+        // 是否设置为了加密队伍
         Integer status = team.getStatus();
         if (status != null) {
             TeamStatus teamStatus = TeamStatus.getEnumByValue(status);
@@ -109,25 +123,44 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             }
         }
 
+        // 跟新队伍信息
         if (!updateById(team)) {
-            return null;
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "修改队伍信息失败");
         }
 
-        return TeamVO.fromTeam(getById(team.getId()));
+        // 返回修改后的队伍信息
+        return getTeamVOById(team.getId());
     }
 
     @Override
-    public TeamVO getTeamById(Long teamId) {
+    public TeamVO getTeamVOById(Long teamId) {
         if (teamId <= 0) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR);
         }
-        return TeamVO.fromTeam(getById(teamId));
+        Team team = getById(teamId);
+        if (team == null) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍不存在");
+        }
+        return TeamVO.fromTeam(team);
     }
 
     @Override
     public IPage<TeamVO> searchTeams(Long current, Long size) {
         Page<Team> teamPage = page(new Page<>(current, size));
         return teamPage.convert(TeamVO::fromTeam);
+    }
+
+    /**
+     * 检查进行操作的队伍是否为当前用户的队伍
+     *
+     * @param teamUserId 队伍 id
+     * @param request
+     */
+    private void checkActionAuth(Long teamUserId,
+                                 HttpServletRequest request) {
+        Long currentUserId = ((LoginUserVO) request.getSession().getAttribute(USER_LOGIN_STATE)).getId();
+        if (!currentUserId.equals(teamUserId))
+            throw new BusinessException(ResponseCode.NO_AUTH);
     }
 }
 

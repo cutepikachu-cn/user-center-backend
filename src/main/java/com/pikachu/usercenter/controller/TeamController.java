@@ -1,8 +1,6 @@
 package com.pikachu.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.pikachu.usercenter.common.ResponseCode;
-import com.pikachu.usercenter.exception.BusinessException;
 import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
 import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
@@ -34,11 +32,9 @@ public class TeamController {
     }
 
     @DeleteMapping("/dismiss")
-    public BaseResponse<?> dismissTeam(@RequestParam Integer teamId,
+    public BaseResponse<?> dismissTeam(@RequestParam Long teamId,
                                        HttpServletRequest request) {
-        if (!teamService.dismissTeam(teamId, request)) {
-            return ResultUtils.error(ResponseCode.SYSTEM_ERROR, "解散队伍失败");
-        }
+        teamService.dismissTeam(teamId, request);
         return ResultUtils.success("解散队伍成功");
     }
 
@@ -46,18 +42,12 @@ public class TeamController {
     public BaseResponse<?> updateTeam(@RequestBody @Valid TeamUpdateRequest teamUpdateRequest,
                                       HttpServletRequest request) {
         TeamVO teamVO = teamService.updateTeam(teamUpdateRequest, request);
-        if (teamVO == null) {
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "修改队伍信息失败");
-        }
         return ResultUtils.success(teamVO, "修改队伍信息成功");
     }
 
     @GetMapping("/get")
     public BaseResponse<TeamVO> getTeam(@RequestParam Long teamId) {
-        TeamVO teamVO = teamService.getTeamById(teamId);
-        if (teamVO == null) {
-            return ResultUtils.error(ResponseCode.PARAMS_ERROR, "获取队伍信息失败");
-        }
+        TeamVO teamVO = teamService.getTeamVOById(teamId);
         return ResultUtils.success(teamVO, "获取队伍信息成功");
     }
 
