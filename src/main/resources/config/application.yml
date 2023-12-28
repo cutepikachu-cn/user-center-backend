@@ -12,8 +12,6 @@ spring:
       port: 6379
       host: localhost
       database: 0
-  session:
-    timeout: 1h
 
 server:
   port: 8080

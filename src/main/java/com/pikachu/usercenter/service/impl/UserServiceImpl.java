@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.pikachu.usercenter.common.ResponseCode;
+import com.pikachu.usercenter.exception.BusinessException;
 import com.pikachu.usercenter.mapper.UserMapper;
 import com.pikachu.usercenter.model.dto.request.UserUpdateRequest;
 import com.pikachu.usercenter.model.entity.User;
@@ -27,8 +29,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.pikachu.usercenter.constant.UserConstant.USER_LOGIN_STATE;
@@ -58,28 +58,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     @Transactional
-    public Long userRegister(String account, String password, String checkPassword) {
-        // 1. 校验
-        if (StringUtils.isAnyBlank(account, password, checkPassword)) {
-            return -1L;
-        }
-        if (!checkPassword.equals(password)) {
-            return -1L;
-        }
-        // 正则校验
-        Matcher accountMatcher = Pattern.compile("^[\\w-]{4,16}$").matcher(account);
-        if (!accountMatcher.matches()) {
-            return -1L;
-        }
-        Matcher passwordMatcher = Pattern.compile("^[\\w-]{8,20}$").matcher(account);
-        if (!passwordMatcher.matches()) {
-            return -1L;
-        }
-        // 账户查重
+    public Long userRegister(String account, String password) {
+
+        // 查询用户是否存在
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.eq("account", account);
         if (count(userQueryWrapper) > 0) {
-            return -1L;
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "用户已存在");
         }
 
         // 2. 密码加密
@@ -96,28 +81,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public LoginUserVO userLogin(String account, String password, HttpServletRequest request) {
-        // 1. 校验
-        if (StringUtils.isAnyBlank(account, password)) {
-            return null;
-        }
-        // 正则校验
-        Matcher accountMatcher = Pattern.compile("^[\\w-]{4,16}$").matcher(account);
-        if (!accountMatcher.matches()) {
-            return null;
-        }
-        Matcher passwordMatcher = Pattern.compile("^[\\w-]{8,20}$").matcher(account);
-        if (!passwordMatcher.matches()) {
-            return null;
-        }
-
         // 2. 查询用户
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + password).getBytes());
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.eq("account", account);
         User user = getOne(userQueryWrapper);
         if (user == null || !user.getPassword().equals(encryptPassword)) {
-            log.info("User login failed");
-            return null;
+            log.info("User login failed, account: {}", account);
+            throw new BusinessException(ResponseCode.NOT_LOGIN, "用户或密码错误");
         }
 
         // 3. 信息脱敏
@@ -229,26 +200,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public UserVO getUserById(Long id) {
+    public UserVO getUserVOById(Long id) {
         return UserVO.fromUser(getById(id));
     }
 
     @Override
     @Transactional
-    public boolean updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+    public void updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
         HttpSession session = request.getSession();
         LoginUserVO currentUser = (LoginUserVO) session.getAttribute(USER_LOGIN_STATE);
         userUpdateRequest.setId(currentUser.getId());
         User user = new User();
         BeanUtils.copyProperties(userUpdateRequest, user);
         if (!updateById(user)) {
-            return false;
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "修改用户信息失败");
         }
         user = getById(user.getId());
         currentUser = new LoginUserVO();
         BeanUtils.copyProperties(user, currentUser);
         session.setAttribute(USER_LOGIN_STATE, currentUser);
-        return true;
     }
 
 }

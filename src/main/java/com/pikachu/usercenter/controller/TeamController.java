@@ -52,8 +52,8 @@ public class TeamController {
     }
 
     @GetMapping("/search")
-    public BaseResponse<IPage<TeamVO>> search(@RequestParam(defaultValue = "1") Long current,
-                                              @RequestParam(defaultValue = "5") Long size) {
+    public BaseResponse<IPage<TeamVO>> searchTeam(@RequestParam(defaultValue = "1") Long current,
+                                                  @RequestParam(defaultValue = "5") Long size) {
         IPage<TeamVO> teamVOIPage = teamService.searchTeams(current, size);
         return ResultUtils.success(teamVOIPage);
     }

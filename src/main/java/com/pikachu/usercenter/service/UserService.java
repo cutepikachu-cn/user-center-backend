@@ -26,12 +26,9 @@ public interface UserService extends IService<User> {
     /**
      * 用户注册
      *
-     * @param account       账户
-     * @param password      密码
-     * @param checkPassword 校验密码
      * @return 新用户 id
      */
-    Long userRegister(String account, String password, String checkPassword);
+    Long userRegister(String account, String password);
 
     /**
      * 用户登录
@@ -73,8 +70,8 @@ public interface UserService extends IService<User> {
      * @param id 用户 id
      * @return 脱敏信息后的用户对象
      */
-    UserVO getUserById(Long id);
+    UserVO getUserVOById(Long id);
 
-    boolean updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
+    void updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
 
 }
