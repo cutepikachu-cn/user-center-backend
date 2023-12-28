@@ -8,8 +8,6 @@ import com.pikachu.usercenter.model.entity.Team;
 import com.pikachu.usercenter.model.vo.TeamVO;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.List;
-
 /**
  * @author 28944
  * @description 针对表【team(队伍表)】的数据库操作Service

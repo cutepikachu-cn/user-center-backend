@@ -6,7 +6,6 @@ import com.pikachu.usercenter.exception.BusinessException;
 import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
 import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
-import com.pikachu.usercenter.model.vo.LoginUserVO;
 import com.pikachu.usercenter.model.vo.TeamVO;
 import com.pikachu.usercenter.service.TeamService;
 import com.pikachu.usercenter.utils.ResultUtils;
@@ -14,13 +13,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RQueue;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
-import static com.pikachu.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * @author 笨蛋皮卡丘

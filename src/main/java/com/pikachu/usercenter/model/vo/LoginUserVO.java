@@ -1,6 +1,5 @@
 package com.pikachu.usercenter.model.vo;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.pikachu.usercenter.model.entity.User;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
