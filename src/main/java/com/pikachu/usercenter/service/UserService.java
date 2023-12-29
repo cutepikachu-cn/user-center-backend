@@ -1,5 +1,6 @@
 package com.pikachu.usercenter.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pikachu.usercenter.model.dto.request.UserUpdateRequest;
@@ -8,6 +9,7 @@ import com.pikachu.usercenter.model.vo.LoginUserVO;
 import com.pikachu.usercenter.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -71,6 +73,8 @@ public interface UserService extends IService<User> {
      * @return 脱敏信息后的用户对象
      */
     UserVO getUserVOById(Long id);
+
+    List<UserVO> listUserVO(QueryWrapper<User> queryWrapper);
 
     void updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
 

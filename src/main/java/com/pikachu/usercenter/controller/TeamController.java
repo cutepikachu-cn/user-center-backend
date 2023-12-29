@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
 import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
-import com.pikachu.usercenter.model.vo.TeamVO;
+import com.pikachu.usercenter.model.vo.TeamUserVO;
 import com.pikachu.usercenter.service.TeamService;
 import com.pikachu.usercenter.utils.ResultUtils;
 import jakarta.annotation.Resource;
@@ -25,9 +25,9 @@ public class TeamController {
     private TeamService teamService;
 
     @PostMapping("/create")
-    public BaseResponse<TeamVO> createTeam(@RequestBody @Valid TeamCreateRequest teamCreateRequest,
-                                           HttpServletRequest request) {
-        TeamVO newTeam = teamService.createTeam(teamCreateRequest, request);
+    public BaseResponse<TeamUserVO> createTeam(@RequestBody @Valid TeamCreateRequest teamCreateRequest,
+                                               HttpServletRequest request) {
+        TeamUserVO newTeam = teamService.createTeam(teamCreateRequest, request);
         return ResultUtils.success(newTeam, "创建队伍成功");
     }
 
@@ -39,23 +39,24 @@ public class TeamController {
     }
 
     @PutMapping("/update")
-    public BaseResponse<?> updateTeam(@RequestBody @Valid TeamUpdateRequest teamUpdateRequest,
-                                      HttpServletRequest request) {
-        TeamVO teamVO = teamService.updateTeam(teamUpdateRequest, request);
-        return ResultUtils.success(teamVO, "修改队伍信息成功");
+    public BaseResponse<TeamUserVO> updateTeam(@RequestBody @Valid TeamUpdateRequest teamUpdateRequest,
+                                               HttpServletRequest request) {
+        TeamUserVO team = teamService.updateTeam(teamUpdateRequest, request);
+        return ResultUtils.success(team, "修改队伍信息成功");
     }
 
     @GetMapping("/get")
-    public BaseResponse<TeamVO> getTeam(@RequestParam Long teamId) {
-        TeamVO teamVO = teamService.getTeamVOById(teamId);
-        return ResultUtils.success(teamVO, "获取队伍信息成功");
+    public BaseResponse<TeamUserVO> getTeam(@RequestParam Long teamId) {
+        TeamUserVO team = teamService.getTeamVOById(teamId);
+        return ResultUtils.success(team, "获取队伍信息成功");
     }
 
     @GetMapping("/search")
-    public BaseResponse<IPage<TeamVO>> searchTeam(@RequestParam(defaultValue = "1") Long current,
-                                                  @RequestParam(defaultValue = "5") Long size) {
-        IPage<TeamVO> teamVOIPage = teamService.searchTeams(current, size);
-        return ResultUtils.success(teamVOIPage);
+    public BaseResponse<IPage<TeamUserVO>> searchTeam(@RequestParam String keyword,
+                                                      @RequestParam(defaultValue = "1") Long current,
+                                                      @RequestParam(defaultValue = "5") Long size) {
+        IPage<TeamUserVO> teamUserVOIPage = teamService.searchTeams(current, size, keyword);
+        return ResultUtils.success(teamUserVOIPage);
     }
 
 }

@@ -34,7 +34,7 @@ public class RecommendPreCache {
      * 主页推荐定时任务缓存
      * 每天缓存 5 页
      */
-    @Scheduled(cron = "0 50 23 * * *")
+    @Scheduled(cron = "0 30 0 * * *")
     public void doCacheRecommend() throws InterruptedException {
         // 获取锁
         RLock lock = redissonClient.getLock("user-center:user:search:do-ache");

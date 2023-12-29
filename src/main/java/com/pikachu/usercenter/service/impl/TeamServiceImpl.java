@@ -1,5 +1,6 @@
 package com.pikachu.usercenter.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -10,18 +11,25 @@ import com.pikachu.usercenter.mapper.TeamMapper;
 import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
 import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
 import com.pikachu.usercenter.model.entity.Team;
+import com.pikachu.usercenter.model.entity.User;
 import com.pikachu.usercenter.model.entity.UserTeam;
 import com.pikachu.usercenter.model.enums.TeamStatus;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
-import com.pikachu.usercenter.model.vo.TeamVO;
+import com.pikachu.usercenter.model.vo.TeamUserVO;
+import com.pikachu.usercenter.model.vo.UserVO;
 import com.pikachu.usercenter.service.TeamService;
+import com.pikachu.usercenter.service.UserService;
 import com.pikachu.usercenter.service.UserTeamService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
+
+import java.util.Date;
+import java.util.List;
 
 import static com.pikachu.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 import static com.pikachu.usercenter.service.UserService.SALT;
@@ -38,9 +46,12 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     @Resource
     UserTeamService userTeamService;
 
+    @Resource
+    UserService userService;
+
     @Override
     @Transactional
-    public TeamVO createTeam(TeamCreateRequest teamCreateRequest, HttpServletRequest request) {
+    public TeamUserVO createTeam(TeamCreateRequest teamCreateRequest, HttpServletRequest request) {
         // 创建队伍对象
         Team team = new Team();
         BeanUtils.copyProperties(teamCreateRequest, team);
@@ -100,7 +111,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
     @Override
     @Transactional
-    public TeamVO updateTeam(TeamUpdateRequest teamUpdateRequest, HttpServletRequest request) {
+    public TeamUserVO updateTeam(TeamUpdateRequest teamUpdateRequest, HttpServletRequest request) {
         // 要修改信息的队伍是否存在
         Team team = getById(teamUpdateRequest.getId());
         if (team == null) {
@@ -133,7 +144,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
-    public TeamVO getTeamVOById(Long teamId) {
+    public TeamUserVO getTeamVOById(Long teamId) {
         if (teamId <= 0) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR);
         }
@@ -141,13 +152,44 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         if (team == null) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍不存在");
         }
-        return TeamVO.fromTeam(team);
+
+        List<UserVO> teamMembers = getTeamMembers(teamId);
+        TeamUserVO teamUserVO = TeamUserVO.combine(team, teamMembers);
+
+        return teamUserVO;
+    }
+
+    private List<UserVO> getTeamMembers(Long teamId) {
+        // 查出队伍中所有队员的 id
+        QueryWrapper<UserTeam> teamQueryWrapper = new QueryWrapper<>();
+        teamQueryWrapper.eq("team_id", teamId);
+        List<Long> memberIdList = userTeamService.list(teamQueryWrapper)
+                .stream().map(UserTeam::getUserId).toList();
+
+        // 根据成员 id 查出成员信息0
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.in("id", memberIdList);
+        return userService.listUserVO(userQueryWrapper);
     }
 
     @Override
-    public IPage<TeamVO> searchTeams(Long current, Long size) {
-        Page<Team> teamPage = page(new Page<>(current, size));
-        return teamPage.convert(TeamVO::fromTeam);
+    public IPage<TeamUserVO> searchTeams(Long current, Long size, String keyword) {
+        LambdaQueryWrapper<Team> teamLambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+        // 筛除私密 / 加密队伍
+        teamLambdaQueryWrapper.notIn(Team::getStatus, 1, 2);
+        // 筛除已过期队伍
+        teamLambdaQueryWrapper.lt(Team::getExpireTime, new Date());
+
+        if (!StringUtils.isBlank(keyword)) {
+            teamLambdaQueryWrapper.or(qr -> qr.like(Team::getName, keyword))
+                    .or(qr -> qr.like(Team::getDescription, keyword))
+                    .or(qr -> qr.like(Team::getTags, keyword));
+        }
+
+        Page<Team> teamPage = page(new Page<>(current, size), teamLambdaQueryWrapper);
+        IPage<TeamUserVO> teamUserVOIPage = teamPage.convert(team -> getTeamVOById(team.getId()));
+        return teamUserVOIPage;
     }
 
     /**

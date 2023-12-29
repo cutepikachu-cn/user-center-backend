@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
 import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
 import com.pikachu.usercenter.model.entity.Team;
-import com.pikachu.usercenter.model.vo.TeamVO;
+import com.pikachu.usercenter.model.vo.TeamUserVO;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -15,13 +15,13 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public interface TeamService extends IService<Team> {
 
-    TeamVO createTeam(TeamCreateRequest teamCreateRequest, HttpServletRequest request);
+    TeamUserVO createTeam(TeamCreateRequest teamCreateRequest, HttpServletRequest request);
 
     void dismissTeam(Long teamId, HttpServletRequest request);
 
-    TeamVO updateTeam(TeamUpdateRequest teamUpdateRequest, HttpServletRequest request);
+    TeamUserVO updateTeam(TeamUpdateRequest teamUpdateRequest, HttpServletRequest request);
 
-    TeamVO getTeamVOById(Long teamId);
+    TeamUserVO getTeamVOById(Long teamId);
 
-    IPage<TeamVO> searchTeams(Long current, Long size);
+    IPage<TeamUserVO> searchTeams(Long current, Long size, String keyword);
 }

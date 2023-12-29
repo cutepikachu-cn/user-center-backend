@@ -205,6 +205,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
+    public List<UserVO> listUserVO(QueryWrapper<User> queryWrapper) {
+        List<User> userList = list(queryWrapper);
+        return userList.stream().map(user -> {
+            UserVO userVO = new UserVO();
+            BeanUtils.copyProperties(user, userVO);
+            return userVO;
+        }).toList();
+    }
+
+    @Override
     @Transactional
     public void updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
         HttpSession session = request.getSession();

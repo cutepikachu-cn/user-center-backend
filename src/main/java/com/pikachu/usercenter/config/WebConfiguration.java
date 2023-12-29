@@ -21,7 +21,9 @@ public class WebConfiguration implements WebMvcConfigurer {
     private final String[] EXCLUDE_PATH_LOGIN = {
             "/user/login",
             "/user/register",
-            "/user/search"
+            "/user/search",
+            "/team/search",
+            "/team/get"
     };
     private final String[] EXCLUDE_PATH_AUTH = {};
     private final String[] CORS_ORIGINS = {
