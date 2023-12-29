@@ -11,28 +11,25 @@ import com.pikachu.usercenter.mapper.TeamMapper;
 import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
 import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
 import com.pikachu.usercenter.model.entity.Team;
+import com.pikachu.usercenter.model.entity.TeamUser;
 import com.pikachu.usercenter.model.entity.User;
-import com.pikachu.usercenter.model.entity.UserTeam;
 import com.pikachu.usercenter.model.enums.TeamStatus;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
 import com.pikachu.usercenter.model.vo.TeamUserVO;
 import com.pikachu.usercenter.model.vo.UserVO;
 import com.pikachu.usercenter.service.TeamService;
+import com.pikachu.usercenter.service.TeamUserService;
 import com.pikachu.usercenter.service.UserService;
-import com.pikachu.usercenter.service.UserTeamService;
+import com.pikachu.usercenter.utils.Tools;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.DigestUtils;
 
 import java.util.Date;
 import java.util.List;
-
-import static com.pikachu.usercenter.constant.UserConstant.USER_LOGIN_STATE;
-import static com.pikachu.usercenter.service.UserService.SALT;
 
 /**
  * @author 28944
@@ -44,7 +41,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         implements TeamService {
 
     @Resource
-    UserTeamService userTeamService;
+    TeamUserService userTeamService;
 
     @Resource
     UserService userService;
@@ -55,14 +52,14 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         // 创建队伍对象
         Team team = new Team();
         BeanUtils.copyProperties(teamCreateRequest, team);
-        Long currentUserId = ((LoginUserVO) request.getSession().getAttribute(USER_LOGIN_STATE)).getId();
+        Long currentUserId = userService.getCurrentLoginUser(request).getId();
         // 队伍为当前登录的用户创建的
         team.setUserId(currentUserId);
 
         // 是否为私密队伍
         TeamStatus teamStatus = TeamStatus.getEnumByValue(team.getStatus());
         if (TeamStatus.SECRET.equals(teamStatus)) {
-            String encryptPassword = DigestUtils.md5DigestAsHex((SALT + team.getPassword()).getBytes());
+            String encryptPassword = Tools.encrypString(team.getPassword());
             team.setPassword(encryptPassword);
         }
 
@@ -72,14 +69,14 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         }
 
         // 添加队伍~队员关系
-        UserTeam userTeam = new UserTeam();
-        userTeam.setTeamId(team.getId());
-        userTeam.setUserId(currentUserId);
-        if (!userTeamService.save(userTeam)) {
+        TeamUser teamUser = new TeamUser();
+        teamUser.setTeamId(team.getId());
+        teamUser.setUserId(currentUserId);
+        if (!userTeamService.save(teamUser)) {
             throw new BusinessException(ResponseCode.SYSTEM_ERROR, "创建队伍失败");
         }
 
-        return getTeamVOById(team.getId());
+        return getTeamUserVOById(team.getId());
     }
 
     @Override
@@ -101,7 +98,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         }
 
         // 删除用户~队伍关系表中的关系数据
-        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<TeamUser> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("team_id", teamId);
         if (!userTeamService.remove(queryWrapper)) {
             throw new BusinessException(ResponseCode.SYSTEM_ERROR, "解散队伍失败");
@@ -129,7 +126,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         if (status != null) {
             TeamStatus teamStatus = TeamStatus.getEnumByValue(status);
             if (TeamStatus.SECRET.equals(teamStatus)) {
-                String encryptPassword = DigestUtils.md5DigestAsHex((SALT + team.getPassword()).getBytes());
+                String encryptPassword = Tools.encrypString(team.getPassword());
                 team.setPassword(encryptPassword);
             }
         }
@@ -140,11 +137,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         }
 
         // 返回修改后的队伍信息
-        return getTeamVOById(team.getId());
+        return getTeamUserVOById(team.getId());
     }
 
     @Override
-    public TeamUserVO getTeamVOById(Long teamId) {
+    public TeamUserVO getTeamUserVOById(Long teamId) {
         if (teamId <= 0) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR);
         }
@@ -161,10 +158,10 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
     private List<UserVO> getTeamMembers(Long teamId) {
         // 查出队伍中所有队员的 id
-        QueryWrapper<UserTeam> teamQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<TeamUser> teamQueryWrapper = new QueryWrapper<>();
         teamQueryWrapper.eq("team_id", teamId);
         List<Long> memberIdList = userTeamService.list(teamQueryWrapper)
-                .stream().map(UserTeam::getUserId).toList();
+                .stream().map(TeamUser::getUserId).toList();
 
         // 根据成员 id 查出成员信息0
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
@@ -179,17 +176,70 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         // 筛除私密 / 加密队伍
         teamLambdaQueryWrapper.notIn(Team::getStatus, 1, 2);
         // 筛除已过期队伍
-        teamLambdaQueryWrapper.lt(Team::getExpireTime, new Date());
+        teamLambdaQueryWrapper.gt(Team::getExpireTime, new Date());
 
+        // 如果有搜索关键字，通过关键字模糊匹配
         if (!StringUtils.isBlank(keyword)) {
-            teamLambdaQueryWrapper.or(qr -> qr.like(Team::getName, keyword))
-                    .or(qr -> qr.like(Team::getDescription, keyword))
-                    .or(qr -> qr.like(Team::getTags, keyword));
+            teamLambdaQueryWrapper.and(qr -> qr.like(Team::getName, keyword)
+                    .or().like(Team::getDescription, keyword)
+                    .or().like(Team::getTags, keyword));
         }
 
         Page<Team> teamPage = page(new Page<>(current, size), teamLambdaQueryWrapper);
-        IPage<TeamUserVO> teamUserVOIPage = teamPage.convert(team -> getTeamVOById(team.getId()));
+        IPage<TeamUserVO> teamUserVOIPage = teamPage.convert(team -> getTeamUserVOById(team.getId()));
         return teamUserVOIPage;
+    }
+
+    @Override
+    @Transactional
+    public void joinTeam(Long teamId, String password, HttpServletRequest request) {
+
+        // 查询队伍是否存在
+        Team team = getById(teamId);
+        if (team == null) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍不存在");
+        }
+
+        // 查询是否已加入
+        LoginUserVO currentUser = userService.getCurrentLoginUser(request);
+        List<TeamUser> members =
+                userTeamService.list(new QueryWrapper<TeamUser>().eq("team_id", teamId));
+        for (TeamUser member : members) {
+            if (member.getUserId().equals(currentUser.getId())) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "已在队伍中");
+            }
+        }
+
+        // 队伍是否再有效期内
+        if (team.getExpireTime().before(new Date())) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "组队有效期已过");
+        }
+
+        // 队伍是否满员
+        if (members.size() == team.getMaxNumber()) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍已满员");
+        }
+
+        // 是否为加密队伍
+        TeamStatus teamStatus = TeamStatus.getEnumByValue(team.getStatus());
+        if (TeamStatus.SECRET.equals(teamStatus)) {
+            if (StringUtils.isBlank(password)) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "密码错误");
+            }
+            String encryptPassword = Tools.encrypString(password);
+            if (!encryptPassword.equals(team.getPassword())) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "密码错误");
+            }
+        }
+
+        // 在队伍~用户关系表添加字段
+        TeamUser teamUser = new TeamUser();
+        teamUser.setTeamId(teamId);
+        teamUser.setUserId(currentUser.getId());
+        if (!userTeamService.save(teamUser)) {
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "加入队伍失败");
+        }
+
     }
 
     /**
@@ -200,7 +250,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      */
     private void checkActionAuth(Long teamUserId,
                                  HttpServletRequest request) {
-        Long currentUserId = ((LoginUserVO) request.getSession().getAttribute(USER_LOGIN_STATE)).getId();
+        Long currentUserId = userService.getCurrentLoginUser(request).getId();
         if (!currentUserId.equals(teamUserId))
             throw new BusinessException(ResponseCode.NO_AUTH);
     }

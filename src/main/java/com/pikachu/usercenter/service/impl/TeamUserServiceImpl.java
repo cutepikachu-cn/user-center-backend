@@ -1,9 +1,9 @@
 package com.pikachu.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pikachu.usercenter.mapper.UserTeamMapper;
-import com.pikachu.usercenter.model.entity.UserTeam;
-import com.pikachu.usercenter.service.UserTeamService;
+import com.pikachu.usercenter.mapper.TeamUserMapper;
+import com.pikachu.usercenter.model.entity.TeamUser;
+import com.pikachu.usercenter.service.TeamUserService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
  * @createDate 2023-12-27 20:06:28
  */
 @Service
-public class UserTeamServiceImpl extends ServiceImpl<UserTeamMapper, UserTeam>
-        implements UserTeamService {
+public class TeamUserServiceImpl extends ServiceImpl<TeamUserMapper, TeamUser>
+        implements TeamUserService {
 
 }
 

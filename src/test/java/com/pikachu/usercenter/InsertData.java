@@ -18,8 +18,7 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static com.pikachu.usercenter.service.UserService.SALT;
-
+import static com.pikachu.usercenter.constant.UserConstant.SALT;
 /**
  * @author 笨蛋皮卡丘
  * @version 1.0

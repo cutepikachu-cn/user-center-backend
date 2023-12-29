@@ -2,6 +2,7 @@ package com.pikachu.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
+import com.pikachu.usercenter.model.dto.request.TeamJoinRequest;
 import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
 import com.pikachu.usercenter.model.vo.TeamUserVO;
@@ -47,16 +48,25 @@ public class TeamController {
 
     @GetMapping("/get")
     public BaseResponse<TeamUserVO> getTeam(@RequestParam Long teamId) {
-        TeamUserVO team = teamService.getTeamVOById(teamId);
+        TeamUserVO team = teamService.getTeamUserVOById(teamId);
         return ResultUtils.success(team, "获取队伍信息成功");
     }
 
     @GetMapping("/search")
-    public BaseResponse<IPage<TeamUserVO>> searchTeam(@RequestParam String keyword,
+    public BaseResponse<IPage<TeamUserVO>> searchTeam(@RequestParam(required = false) String keyword,
                                                       @RequestParam(defaultValue = "1") Long current,
                                                       @RequestParam(defaultValue = "5") Long size) {
         IPage<TeamUserVO> teamUserVOIPage = teamService.searchTeams(current, size, keyword);
         return ResultUtils.success(teamUserVOIPage);
+    }
+
+    @PostMapping("/join")
+    public BaseResponse<?> joinTeam(@RequestBody @Valid TeamJoinRequest teamJoinRequest,
+                                    HttpServletRequest request) {
+        Long teamId = teamJoinRequest.getTeamId();
+        String password = teamJoinRequest.getPassword();
+        teamService.joinTeam(teamId, password, request);
+        return ResultUtils.success("加入队伍成功");
     }
 
 }

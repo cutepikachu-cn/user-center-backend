@@ -12,9 +12,9 @@ import java.util.Date;
  *
  * @TableName user_team
  */
-@TableName(value = "user_team")
+@TableName(value = "team_user")
 @Data
-public class UserTeam implements Serializable {
+public class TeamUser implements Serializable {
     /**
      * id
      */

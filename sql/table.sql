@@ -62,7 +62,7 @@ create table team
 ) collate utf8mb4_unicode_ci
   charset utf8mb4 comment '队伍表';
 
-drop table if exists user_team;
+drop table if exists team_user;
 create table user_team
 (
     id          bigint auto_increment comment 'id',

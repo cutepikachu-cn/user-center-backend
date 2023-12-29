@@ -21,7 +21,9 @@ public interface TeamService extends IService<Team> {
 
     TeamUserVO updateTeam(TeamUpdateRequest teamUpdateRequest, HttpServletRequest request);
 
-    TeamUserVO getTeamVOById(Long teamId);
+    TeamUserVO getTeamUserVOById(Long teamId);
 
     IPage<TeamUserVO> searchTeams(Long current, Long size, String keyword);
+
+    void joinTeam(Long teamId, String password, HttpServletRequest request);
 }

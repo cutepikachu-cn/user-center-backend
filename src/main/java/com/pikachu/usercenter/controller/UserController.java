@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.pikachu.usercenter.constant.UserConstant.USER_LOGIN_STATE;
-
 /**
  * 用户接口
  *
@@ -64,7 +62,8 @@ public class UserController {
 
     @GetMapping("/current")
     public BaseResponse<LoginUserVO> getCurrentUser(HttpServletRequest request) {
-        LoginUserVO user = ((LoginUserVO) request.getSession().getAttribute(USER_LOGIN_STATE));
+        LoginUserVO user = userService.getCurrentLoginUser(request);
+        ;
         return ResultUtils.success(user, "当前用户");
     }
 
@@ -90,7 +89,8 @@ public class UserController {
                                                 HttpServletRequest request) {
 
         userService.updateUser(userUpdateRequest, request);
-        LoginUserVO currentUser = (LoginUserVO) request.getSession().getAttribute(USER_LOGIN_STATE);
+        LoginUserVO currentUser = userService.getCurrentLoginUser(request);
+        ;
         return ResultUtils.success(currentUser, "修改用户信息成功");
     }
 }

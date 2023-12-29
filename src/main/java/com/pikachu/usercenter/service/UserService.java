@@ -20,12 +20,6 @@ import java.util.Map;
 public interface UserService extends IService<User> {
 
     /**
-     * 盐值
-     * 用于混淆加密密码
-     */
-    String SALT = "pikachu";
-
-    /**
      * 用户注册
      *
      * @return 新用户 id
@@ -40,6 +34,8 @@ public interface UserService extends IService<User> {
      * @return 脱敏后的用户信息对象
      */
     LoginUserVO userLogin(String account, String password, HttpServletRequest request);
+
+    LoginUserVO getCurrentLoginUser(HttpServletRequest request);
 
 
     /**

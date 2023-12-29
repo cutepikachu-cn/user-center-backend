@@ -12,6 +12,7 @@ import com.pikachu.usercenter.model.entity.User;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
 import com.pikachu.usercenter.model.vo.UserVO;
 import com.pikachu.usercenter.service.UserService;
+import com.pikachu.usercenter.utils.Tools;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -23,7 +24,6 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.DigestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -68,7 +68,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         // 2. 密码加密
-        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + password).getBytes());
+        String encryptPassword = Tools.encrypString(password);
 
         // 3. 插入数据
         User user = new User();
@@ -82,7 +82,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public LoginUserVO userLogin(String account, String password, HttpServletRequest request) {
         // 2. 查询用户
-        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + password).getBytes());
+        String encryptPassword = Tools.encrypString(password);
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.eq("account", account);
         User user = getOne(userQueryWrapper);
@@ -101,6 +101,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         return loginUserVO;
 
+    }
+
+    @Override
+    public LoginUserVO getCurrentLoginUser(HttpServletRequest request) {
+        return (LoginUserVO) request.getSession().getAttribute(USER_LOGIN_STATE);
     }
 
     @Override

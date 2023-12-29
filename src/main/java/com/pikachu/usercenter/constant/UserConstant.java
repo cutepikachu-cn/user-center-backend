@@ -11,4 +11,10 @@ public interface UserConstant {
     String USER_LOGIN_STATE = "userLoginState";
 
     int ROLE_DEFAULT = 0, ROLE_ADMIN = 1;
+
+    /**
+     * 盐值
+     * 用于混淆加密密码
+     */
+    String SALT = "pikachu";
 }

@@ -1,13 +1,12 @@
 package com.pikachu.usercenter;
 
+import com.pikachu.usercenter.utils.Tools;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
 /**
  * @author 笨蛋皮卡丘
  * @version 1.0
@@ -20,7 +19,7 @@ class UserCenterBackendApplicationTest {
         byte[] digest = md5.digest("abc123".getBytes(StandardCharsets.UTF_8));
         System.out.println(new String(digest));
 
-        String newPassword = DigestUtils.md5DigestAsHex(("pikachu" + "123456789").getBytes(StandardCharsets.UTF_8));
+        String newPassword = Tools.encrypString("12345678");
         System.out.println(newPassword);
     }
 

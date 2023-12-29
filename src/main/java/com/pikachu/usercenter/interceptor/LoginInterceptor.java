@@ -3,12 +3,12 @@ package com.pikachu.usercenter.interceptor;
 import com.pikachu.usercenter.common.ResponseCode;
 import com.pikachu.usercenter.exception.BusinessException;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
+import com.pikachu.usercenter.service.UserService;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import static com.pikachu.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * @author 笨蛋皮卡丘
@@ -16,10 +16,12 @@ import static com.pikachu.usercenter.constant.UserConstant.USER_LOGIN_STATE;
  */
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
+    @Resource
+    private UserService userService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        LoginUserVO user = (LoginUserVO) request.getSession().getAttribute(USER_LOGIN_STATE);
+        LoginUserVO user = userService.getCurrentLoginUser(request);
         if (user == null) {
             throw new BusinessException(ResponseCode.NOT_LOGIN);
         }
