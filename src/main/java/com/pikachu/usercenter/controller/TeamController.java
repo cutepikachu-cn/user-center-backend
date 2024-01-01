@@ -7,6 +7,7 @@ import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
 import com.pikachu.usercenter.model.vo.TeamUserVO;
 import com.pikachu.usercenter.service.TeamService;
+import com.pikachu.usercenter.service.TeamUserService;
 import com.pikachu.usercenter.utils.ResultUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 public class TeamController {
     @Resource
     private TeamService teamService;
+    @Resource
+    private TeamUserService teamUserService;
 
     @PostMapping("/create")
     public BaseResponse<TeamUserVO> createTeam(@RequestBody @Valid TeamCreateRequest teamCreateRequest,
@@ -36,7 +39,7 @@ public class TeamController {
     public BaseResponse<?> dismissTeam(@RequestParam Long teamId,
                                        HttpServletRequest request) {
         teamService.dismissTeam(teamId, request);
-        return ResultUtils.success("解散队伍成功");
+        return ResultUtils.success(true, "解散队伍成功");
     }
 
     @PutMapping("/update")
@@ -66,7 +69,14 @@ public class TeamController {
         Long teamId = teamJoinRequest.getTeamId();
         String password = teamJoinRequest.getPassword();
         teamService.joinTeam(teamId, password, request);
-        return ResultUtils.success("加入队伍成功");
+        return ResultUtils.success(true, "加入队伍成功");
+    }
+
+    @DeleteMapping("/exit")
+    public BaseResponse<?> exitTeam(@RequestParam Long teamId,
+                                    HttpServletRequest request) {
+        teamService.exitTeam(teamId, request);
+        return ResultUtils.success(true, "退出队伍成功");
     }
 
 }

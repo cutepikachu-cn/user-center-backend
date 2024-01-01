@@ -22,7 +22,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
@@ -57,7 +56,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    @Transactional
     public Long userRegister(String account, String password) {
 
         // 查询用户是否存在
@@ -220,7 +218,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    @Transactional
     public void updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
         HttpSession session = request.getSession();
         LoginUserVO currentUser = (LoginUserVO) session.getAttribute(USER_LOGIN_STATE);

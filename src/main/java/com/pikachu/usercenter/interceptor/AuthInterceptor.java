@@ -3,21 +3,18 @@ package com.pikachu.usercenter.interceptor;
 import com.pikachu.usercenter.common.ResponseCode;
 import com.pikachu.usercenter.exception.BusinessException;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
-import com.pikachu.usercenter.service.UserService;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import static com.pikachu.usercenter.constant.UserConstant.ROLE_ADMIN;
+import static com.pikachu.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * @author 笨蛋皮卡丘
  * @version 1.0
  */
 public class AuthInterceptor implements HandlerInterceptor {
-    @Resource
-    private UserService userService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -33,8 +30,7 @@ public class AuthInterceptor implements HandlerInterceptor {
      */
     private boolean isAdmin(HttpServletRequest request) {
         // 鉴权
-        LoginUserVO user = userService.getCurrentLoginUser(request);
-        ;
+        LoginUserVO user = (LoginUserVO) request.getSession().getAttribute(USER_LOGIN_STATE);
         return user != null && user.getRole() == ROLE_ADMIN;
     }
 }

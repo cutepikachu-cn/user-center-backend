@@ -8,6 +8,7 @@ import com.pikachu.usercenter.model.entity.User;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
 import com.pikachu.usercenter.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ public interface UserService extends IService<User> {
      *
      * @return 新用户 id
      */
+    @Transactional
     Long userRegister(String account, String password);
 
     /**
@@ -72,6 +74,7 @@ public interface UserService extends IService<User> {
 
     List<UserVO> listUserVO(QueryWrapper<User> queryWrapper);
 
+    @Transactional
     void updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
 
 }

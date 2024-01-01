@@ -57,7 +57,7 @@ public class UserController {
     @PostMapping("/logout")
     public BaseResponse<?> userLogout(HttpServletRequest request) {
         userService.userLogout(request);
-        return ResultUtils.success("退出登录成功");
+        return ResultUtils.success(true, "退出登录成功");
     }
 
     @GetMapping("/current")
