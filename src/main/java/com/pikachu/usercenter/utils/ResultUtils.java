@@ -1,7 +1,7 @@
 package com.pikachu.usercenter.utils;
 
-import com.pikachu.usercenter.common.ResponseCode;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
+import com.pikachu.usercenter.model.enums.ResponseCode;
 
 /**
  * @author 笨蛋皮卡丘

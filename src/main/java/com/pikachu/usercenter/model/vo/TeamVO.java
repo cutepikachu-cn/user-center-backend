@@ -2,10 +2,11 @@ package com.pikachu.usercenter.model.vo;
 
 import com.pikachu.usercenter.model.entity.Team;
 import lombok.Data;
-import org.springframework.beans.BeanUtils;
+import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.List;
 
@@ -18,11 +19,11 @@ import java.util.List;
 @Data
 public class TeamVO implements Serializable {
 
-    public static TeamVO fromTeam(Team team) {
+    public static TeamVO fromTeam(Team team) throws InvocationTargetException, IllegalAccessException {
         if (team == null)
             return null;
         TeamVO teamVO = new TeamVO();
-        BeanUtils.copyProperties(team, teamVO);
+        BeanUtils.copyProperties(teamVO, team);
         return teamVO;
     }
 

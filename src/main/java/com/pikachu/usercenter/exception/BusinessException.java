@@ -1,6 +1,6 @@
 package com.pikachu.usercenter.exception;
 
-import com.pikachu.usercenter.common.ResponseCode;
+import com.pikachu.usercenter.model.enums.ResponseCode;
 
 import java.io.Serial;
 

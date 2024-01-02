@@ -1,4 +1,4 @@
-package com.pikachu.usercenter.common;
+package com.pikachu.usercenter.model.enums;
 
 import lombok.Getter;
 

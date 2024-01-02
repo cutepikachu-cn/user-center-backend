@@ -1,6 +1,6 @@
 package com.pikachu.usercenter.model.dto.response;
 
-import com.pikachu.usercenter.common.ResponseCode;
+import com.pikachu.usercenter.model.enums.ResponseCode;
 import lombok.Data;
 
 import java.io.Serial;

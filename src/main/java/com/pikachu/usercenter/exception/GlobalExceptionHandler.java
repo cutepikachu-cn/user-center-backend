@@ -1,7 +1,7 @@
 package com.pikachu.usercenter.exception;
 
-import com.pikachu.usercenter.common.ResponseCode;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
+import com.pikachu.usercenter.model.enums.ResponseCode;
 import com.pikachu.usercenter.utils.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;

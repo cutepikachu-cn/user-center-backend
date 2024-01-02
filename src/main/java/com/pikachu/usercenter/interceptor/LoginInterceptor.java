@@ -1,7 +1,7 @@
 package com.pikachu.usercenter.interceptor;
 
-import com.pikachu.usercenter.common.ResponseCode;
 import com.pikachu.usercenter.exception.BusinessException;
+import com.pikachu.usercenter.model.enums.ResponseCode;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

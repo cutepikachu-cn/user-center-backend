@@ -2,10 +2,11 @@ package com.pikachu.usercenter.model.vo;
 
 import com.pikachu.usercenter.model.entity.User;
 import lombok.Data;
-import org.springframework.beans.BeanUtils;
+import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,9 +16,9 @@ import java.util.List;
 @Data
 public class LoginUserVO implements Serializable {
 
-    public static LoginUserVO fromUser(User user) {
+    public static LoginUserVO fromUser(User user) throws InvocationTargetException, IllegalAccessException {
         LoginUserVO loginUserVO = new LoginUserVO();
-        BeanUtils.copyProperties(user, loginUserVO);
+        BeanUtils.copyProperties(loginUserVO, user);
         return loginUserVO;
     }
 

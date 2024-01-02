@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pikachu.usercenter.common.ResponseCode;
 import com.pikachu.usercenter.exception.BusinessException;
 import com.pikachu.usercenter.mapper.TeamMapper;
 import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
@@ -13,6 +12,7 @@ import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
 import com.pikachu.usercenter.model.entity.Team;
 import com.pikachu.usercenter.model.entity.TeamUser;
 import com.pikachu.usercenter.model.entity.User;
+import com.pikachu.usercenter.model.enums.ResponseCode;
 import com.pikachu.usercenter.model.enums.TeamStatus;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
 import com.pikachu.usercenter.model.vo.TeamUserVO;
@@ -23,10 +23,11 @@ import com.pikachu.usercenter.service.UserService;
 import com.pikachu.usercenter.utils.Tools;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -51,7 +52,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     public TeamUserVO createTeam(TeamCreateRequest teamCreateRequest, HttpServletRequest request) {
         // 创建队伍对象
         Team team = new Team();
-        BeanUtils.copyProperties(teamCreateRequest, team);
+        try {
+            BeanUtils.copyProperties(team, teamCreateRequest);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
         Long currentUserId = userService.getCurrentLoginUser(request).getId();
         // 队伍为当前登录的用户创建的
         team.setUserId(currentUserId);
@@ -117,7 +122,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         }
 
         // 拷贝要修改的信息
-        BeanUtils.copyProperties(teamUpdateRequest, team);
+        try {
+            BeanUtils.copyProperties(team, teamUpdateRequest);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
 
         // 是否设置为了加密队伍
         Integer status = team.getStatus();
@@ -146,7 +155,12 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         Team team = getTeamIfExist(teamId);
 
         List<UserVO> teamMembers = getTeamMembers(teamId);
-        TeamUserVO teamUserVO = TeamUserVO.combine(team, teamMembers);
+        TeamUserVO teamUserVO = null;
+        try {
+            teamUserVO = TeamUserVO.combine(team, teamMembers);
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
 
         return teamUserVO;
     }

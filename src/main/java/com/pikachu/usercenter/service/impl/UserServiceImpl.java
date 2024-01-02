@@ -4,11 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pikachu.usercenter.common.ResponseCode;
 import com.pikachu.usercenter.exception.BusinessException;
 import com.pikachu.usercenter.mapper.UserMapper;
 import com.pikachu.usercenter.model.dto.request.UserUpdateRequest;
 import com.pikachu.usercenter.model.entity.User;
+import com.pikachu.usercenter.model.enums.ResponseCode;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
 import com.pikachu.usercenter.model.vo.UserVO;
 import com.pikachu.usercenter.service.UserService;
@@ -17,13 +17,14 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +91,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         // 3. 信息脱敏
-        LoginUserVO loginUserVO = LoginUserVO.fromUser(user);
+        LoginUserVO loginUserVO;
+        try {
+            loginUserVO = LoginUserVO.fromUser(user);
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
 
         // 4. 记录用户登录状态
         // 获取 Session，并存储登录信息
@@ -159,7 +165,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         // if (userPage == null)
         //     throw new BusinessException(ResponseCode.SYSTEM_ERROR);
-        return userPage.convert(UserVO::fromUser);
+        return userPage.convert(user -> {
+            try {
+                return UserVO.fromUser(user);
+            } catch (InvocationTargetException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private Page<User> searchUserByTags(List<String> searchedTagList,
@@ -204,7 +216,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public UserVO getUserVOById(Long id) {
-        return UserVO.fromUser(getById(id));
+        try {
+            return UserVO.fromUser(getById(id));
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -212,7 +228,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         List<User> userList = list(queryWrapper);
         return userList.stream().map(user -> {
             UserVO userVO = new UserVO();
-            BeanUtils.copyProperties(user, userVO);
+            try {
+                BeanUtils.copyProperties(userVO, user);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
             return userVO;
         }).toList();
     }
@@ -223,13 +243,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         LoginUserVO currentUser = (LoginUserVO) session.getAttribute(USER_LOGIN_STATE);
         userUpdateRequest.setId(currentUser.getId());
         User user = new User();
-        BeanUtils.copyProperties(userUpdateRequest, user);
-        if (!updateById(user)) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "修改用户信息失败");
+        try {
+            BeanUtils.copyProperties(user, userUpdateRequest);
+            if (!updateById(user)) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "修改用户信息失败");
+            }
+            user = getById(user.getId());
+            currentUser = new LoginUserVO();
+            BeanUtils.copyProperties(currentUser, user);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
-        user = getById(user.getId());
-        currentUser = new LoginUserVO();
-        BeanUtils.copyProperties(user, currentUser);
         session.setAttribute(USER_LOGIN_STATE, currentUser);
     }
 
