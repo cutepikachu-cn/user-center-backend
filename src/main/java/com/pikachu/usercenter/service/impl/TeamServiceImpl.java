@@ -60,6 +60,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         Long currentUserId = userService.getCurrentLoginUser(request).getId();
         // 队伍为当前登录的用户创建的
         team.setUserId(currentUserId);
+        team.setCreateUserId(currentUserId);
 
         // 是否为私密队伍
         TeamStatus teamStatus = TeamStatus.getEnumByValue(team.getStatus());

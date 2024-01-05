@@ -46,24 +46,25 @@ create table if not exists tag
 drop table if exists team;
 create table team
 (
-    id          bigint auto_increment comment 'id',
-    name        varchar(64) not null comment '队伍名称',
-    description varchar(512) comment '队伍描述',
-    max_number  int         not null default 2 comment '队伍最大人数',
-    expire_time datetime    not null comment '过期时间',
-    user_id     bigint      not null comment '队长id',
-    status      int         not null default 0 comment '队伍状态（默认0 ~ 公开；1 ~ 私有；2 ~ 加密）',
-    password    varchar(256) comment '队伍密码（加密队伍需密码加入）',
-    tags        varchar(128) comment '用户标签列表，以`,`分割',
-    create_time datetime    not null default current_timestamp comment '创建时间',
-    update_time timestamp   not null default current_timestamp on update current_timestamp comment '更新时间',
-    is_delete   bit         not null default 0 comment '是否删除',
+    id             bigint auto_increment comment 'id',
+    name           varchar(64) not null comment '队伍名称',
+    description    varchar(512) comment '队伍描述',
+    max_number     int         not null default 2 comment '队伍最大人数',
+    expire_time    datetime    not null comment '过期时间',
+    user_id        bigint      not null comment '队长id',
+    create_user_id bigint      not null comment '创建人id',
+    status         int         not null default 0 comment '队伍状态（默认0 ~ 公开；1 ~ 私有；2 ~ 加密）',
+    password       varchar(256) comment '队伍密码（加密队伍需密码加入）',
+    tags           varchar(128) comment '用户标签列表，以`,`分割',
+    create_time    datetime    not null default current_timestamp comment '创建时间',
+    update_time    timestamp   not null default current_timestamp on update current_timestamp comment '更新时间',
+    is_delete      bit         not null default 0 comment '是否删除',
     constraint pk_id primary key (id)
 ) collate utf8mb4_unicode_ci
   charset utf8mb4 comment '队伍表';
 
 drop table if exists team_user;
-create table user_team
+create table team_user
 (
     id          bigint auto_increment comment 'id',
     user_id     bigint    not null comment '用户id',
@@ -72,7 +73,6 @@ create table user_team
     create_time datetime  not null default current_timestamp comment '创建时间',
     update_time timestamp not null default current_timestamp on update current_timestamp comment '更新时间',
     is_delete   bit       not null default 0 comment '是否删除',
-    constraint pk_id primary key (id),
-    constraint uk_user_team unique (user_id, team_id)
+    constraint pk_id primary key (id)
 ) collate utf8mb4_unicode_ci
   charset utf8mb4 comment '队伍~用户关系表';

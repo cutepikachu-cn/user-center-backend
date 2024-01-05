@@ -7,7 +7,6 @@ import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
 import com.pikachu.usercenter.model.vo.TeamUserVO;
 import com.pikachu.usercenter.service.TeamService;
-import com.pikachu.usercenter.service.TeamUserService;
 import com.pikachu.usercenter.utils.ResultUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,8 +24,6 @@ import org.springframework.web.bind.annotation.*;
 public class TeamController {
     @Resource
     private TeamService teamService;
-    @Resource
-    private TeamUserService teamUserService;
 
     @PostMapping("/create")
     public BaseResponse<TeamUserVO> createTeam(@RequestBody @Valid TeamCreateRequest teamCreateRequest,

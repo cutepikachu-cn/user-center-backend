@@ -48,6 +48,11 @@ public class Team implements Serializable {
     private Long userId;
 
     /**
+     * 队伍创建用户id
+     */
+    private Long createUserId;
+
+    /**
      * 队伍状态（默认0 ~ 公开；1 ~ 私有；2 ~ 加密）
      */
     private Integer status;
