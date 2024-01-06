@@ -1,17 +1,8 @@
 spring:
+  profiles:
+    active: dev
   application:
     name: user-center
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/user_center
-    username: root
-    password: root123456789
-  # redis 配置
-  data:
-    redis:
-      port: 6379
-      host: localhost
-      database: 0
 
 server:
   port: 8080
@@ -28,26 +19,7 @@ mybatis-plus:
       logic-delete-field: isDelete # 全局逻辑删除的实体字段名
       logic-delete-value: true # 逻辑已删除值(默认为 1)
       logic-not-delete-value: false # 逻辑未删除值(默认为 0)
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath*:/mapper/**/*Mapper.xml
   type-aliases-package: com.pikachu.usercenter.model.domain
   type-handlers-package: com.pikachu.usercenter.typehandler
 
-# springdoc-openapi项目配置
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    tags-sorter: alpha
-    operations-sorter: alpha
-  api-docs:
-    path: /v3/api-docs
-  group-configs:
-    - group: 'default'
-      paths-to-match: '/**'
-      packages-to-scan: com.pikachu.usercenter
-# knife4j的增强配置，不需要增强可以不配
-knife4j:
-  enable: true
-  setting:
-    language: zh_cn

@@ -3,10 +3,8 @@ spring:
     url: jdbc:mysql://sh-cynosdbmysql-grp-fhzsajjy.sql.tencentcdb.com:28352/user_center
     username: root
     password: Root123456789
-  config:
-    activate:
-      # 开启生产环境
-      on-profile: prod
+
+# 关闭 Mybatis-Plus 日志
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
