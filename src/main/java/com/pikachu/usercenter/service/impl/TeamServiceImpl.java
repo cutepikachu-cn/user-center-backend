@@ -3,6 +3,7 @@ package com.pikachu.usercenter.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pikachu.usercenter.exception.BusinessException;
@@ -255,6 +256,26 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "退出队伍失败");
         }
 
+    }
+
+    @Override
+    public void transferTeam(Long teamId, Long userId, HttpServletRequest request) {
+        Team team = getTeamIfExist(teamId);
+
+        Long currentUserId = userService.getCurrentLoginUser(request).getId();
+        if (!isCaptain(team, currentUserId)) {
+            throw new BusinessException(ResponseCode.NO_AUTH, "不是队长");
+        }
+        if (userService.getById(userId) == null) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "用户不存在");
+        }
+        LambdaUpdateChainWrapper<Team> teamLambdaUpdateChainWrapper
+                = new LambdaUpdateChainWrapper<>(Team.class);
+        teamLambdaUpdateChainWrapper.set(Team::getUserId, userId);
+
+        if (!update(teamLambdaUpdateChainWrapper)) {
+            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "转让队伍失败");
+        }
     }
 
     /**

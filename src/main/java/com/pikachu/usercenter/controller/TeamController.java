@@ -76,4 +76,12 @@ public class TeamController {
         return ResultUtils.success(true, "退出队伍成功");
     }
 
+    @PostMapping("/transfer")
+    public BaseResponse<?> transferTeam(@RequestParam Long teamId,
+                                        @RequestParam Long userId,
+                                        HttpServletRequest request) {
+        teamService.transferTeam(teamId, userId, request);
+        return ResultUtils.success(true, "转让队伍成功");
+    }
+
 }

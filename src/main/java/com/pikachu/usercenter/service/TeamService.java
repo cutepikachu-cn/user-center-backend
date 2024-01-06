@@ -35,4 +35,7 @@ public interface TeamService extends IService<Team> {
     @Transactional
     void exitTeam(Long teamId, HttpServletRequest request);
 
+    @Transactional
+    void transferTeam(Long teamId, Long userId, HttpServletRequest request);
+
 }
