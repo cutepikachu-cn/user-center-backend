@@ -50,17 +50,16 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
     @Override
     public TeamUserVO createTeam(TeamCreateRequest teamCreateRequest, HttpServletRequest request) {
+        // 队伍为当前登录的用户创建的
+        Long currentUserId = userService.getCurrentLoginUser(request).getId();
+        teamCreateRequest.setUserId(currentUserId);
         // 创建队伍对象
-        Team team = new Team();
+        Team team;
         try {
-            BeanUtils.copyProperties(team, teamCreateRequest);
+            team = Team.fromTeamCreateRequest(teamCreateRequest);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
-        Long currentUserId = userService.getCurrentLoginUser(request).getId();
-        // 队伍为当前登录的用户创建的
-        team.setUserId(currentUserId);
-        team.setCreateUserId(currentUserId);
 
         // 是否为私密队伍
         TeamStatus teamStatus = TeamStatus.getEnumByValue(team.getStatus());
