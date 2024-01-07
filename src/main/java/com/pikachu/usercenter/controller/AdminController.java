@@ -31,7 +31,7 @@ public class AdminController {
     }
 
     @PutMapping("/update")
-    public BaseResponse<User> updateUser(@RequestBody(required = false) User user) {
+    public BaseResponse<?> updateUser(@RequestBody(required = false) User user) {
         if (user == null || user.getId() == null || user.getId() <= 0)
             throw new BusinessException(ResponseCode.PARAMS_ERROR);
         return userService.updateById(user) ? ResultUtils.success("修改用户信息成功")
@@ -39,7 +39,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/delete")
-    public BaseResponse<Long> deleteUser(Long id) {
+    public BaseResponse<?> deleteUser(Long id) {
         if (id == null || id <= 0 || !userService.removeById(id))
             return ResultUtils.error(ResponseCode.PARAMS_ERROR, "删除失败");
 
