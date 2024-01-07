@@ -124,7 +124,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
         // 队伍人数不可少于当前队伍已有人数
         if (teamUpdateRequest.getMaxNumber() != null
-                && getTeamMembers(team.getId()).size() < teamUpdateRequest.getMaxNumber()) {
+                && getTeamMembers(team.getId()).size() > teamUpdateRequest.getMaxNumber()) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍最大人数不可少于当前队伍人数");
         }
 

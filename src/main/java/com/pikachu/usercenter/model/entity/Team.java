@@ -2,6 +2,7 @@ package com.pikachu.usercenter.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
+import com.pikachu.usercenter.typehandler.StringListTypeHandler;
 import lombok.Data;
 import org.apache.commons.beanutils.BeanUtils;
 
@@ -77,6 +78,7 @@ public class Team implements Serializable {
     /**
      * 用户标签列表，以`,`分割
      */
+    @TableField(typeHandler = StringListTypeHandler.class)
     private List<String> tags;
 
     /**

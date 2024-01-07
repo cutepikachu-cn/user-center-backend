@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.pikachu.usercenter.typehandler.StringListTypeHandler;
 import lombok.Data;
 
 import java.io.Serial;
@@ -98,6 +99,7 @@ public class User implements Serializable {
     /**
      * 用户标签列表
      */
+    @TableField(typeHandler = StringListTypeHandler.class)
     private List<String> tags;
 
     @Serial

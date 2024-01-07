@@ -10,7 +10,6 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,6 +42,6 @@ public class StringListTypeHandler extends BaseTypeHandler<List<String>> {
     private List<String> convertToList(String columnValue) {
         if (StringUtils.isBlank(columnValue))
             return null;
-        return Arrays.asList(columnValue.split(","));
+        return List.of(columnValue.split(","));
     }
 }
