@@ -29,6 +29,16 @@ public class BaseResponse<T> implements Serializable {
         this.message = message;
     }
 
+    public BaseResponse(ResponseCode code, T data) {
+        this.code = code.getCode();
+        this.data = data;
+    }
+
+    public BaseResponse(ResponseCode code) {
+        this.code = code.getCode();
+        this.message = code.getDescription();
+    }
+
     public BaseResponse(Integer code, String message, T data) {
         this.code = code;
         this.message = message;
@@ -38,5 +48,10 @@ public class BaseResponse<T> implements Serializable {
     public BaseResponse(Integer code, String message) {
         this.code = code;
         this.message = message;
+    }
+
+    public BaseResponse(Integer code, T data) {
+        this.code = code;
+        this.data = data;
     }
 }

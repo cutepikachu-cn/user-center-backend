@@ -19,19 +19,19 @@ public class ResultUtils {
         return new BaseResponse<>(ResponseCode.SUCCESS, ResponseCode.SUCCESS.getDescription(), data);
     }
 
-    public static <T> BaseResponse<T> success(String message) {
-        return new BaseResponse<>(ResponseCode.SUCCESS, message, null);
+    public static BaseResponse<?> success(String message) {
+        return new BaseResponse<>(ResponseCode.SUCCESS, message, true);
     }
 
-    public static <T> BaseResponse<T> error(Integer errorCode, String message) {
-        return new BaseResponse<>(errorCode, message);
+    public static BaseResponse<?> error(Integer errorCode, String message) {
+        return new BaseResponse<>(errorCode, message, false);
     }
 
-    public static <T> BaseResponse<T> error(ResponseCode errorCode, String message) {
-        return new BaseResponse<>(errorCode, message);
+    public static BaseResponse<?> error(ResponseCode errorCode, String message) {
+        return new BaseResponse<>(errorCode, message, false);
     }
 
-    public static <T> BaseResponse<T> error(ResponseCode errorCode) {
-        return new BaseResponse<>(errorCode, errorCode.getDescription());
+    public static BaseResponse<?> error(ResponseCode errorCode) {
+        return new BaseResponse<>(errorCode, errorCode.getDescription(), false);
     }
 }
