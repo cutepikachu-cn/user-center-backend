@@ -14,6 +14,8 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author 笨蛋皮卡丘
  * @version 1.0
@@ -82,6 +84,18 @@ public class TeamController {
                                         HttpServletRequest request) {
         teamService.transferTeam(teamId, userId, request);
         return ResultUtils.success(true, "转让队伍成功");
+    }
+
+    @GetMapping("/my/manage")
+    public BaseResponse<List<TeamUserVO>> listMyManageTeams(HttpServletRequest request) {
+        List<TeamUserVO> manageTeams = teamService.getManageTeams(request);
+        return ResultUtils.success(manageTeams);
+    }
+
+    @GetMapping("/my/join")
+    public BaseResponse<List<TeamUserVO>> listMyJoinedTeams(HttpServletRequest request) {
+        List<TeamUserVO> joinedTeams = teamService.getJoinedTeams(request);
+        return ResultUtils.success(joinedTeams);
     }
 
 }

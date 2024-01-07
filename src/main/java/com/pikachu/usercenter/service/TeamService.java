@@ -9,6 +9,8 @@ import com.pikachu.usercenter.model.vo.TeamUserVO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * @author 28944
  * @description 针对表【team(队伍表)】的数据库操作Service
@@ -37,5 +39,9 @@ public interface TeamService extends IService<Team> {
 
     @Transactional
     void transferTeam(Long teamId, Long userId, HttpServletRequest request);
+
+    List<TeamUserVO> getManageTeams(HttpServletRequest request);
+
+    List<TeamUserVO> getJoinedTeams(HttpServletRequest request);
 
 }

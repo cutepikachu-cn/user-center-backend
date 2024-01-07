@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -162,7 +163,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         Team team = getTeamIfExist(teamId);
 
         List<UserVO> teamMembers = getTeamMembers(teamId);
-        TeamUserVO teamUserVO = null;
+        TeamUserVO teamUserVO;
         try {
             teamUserVO = TeamUserVO.combine(team, teamMembers);
         } catch (InvocationTargetException | IllegalAccessException e) {
@@ -282,6 +283,38 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         if (!update(teamLambdaUpdateChainWrapper)) {
             throw new BusinessException(ResponseCode.SYSTEM_ERROR, "转让队伍失败");
         }
+    }
+
+    @Override
+    public List<TeamUserVO> getManageTeams(HttpServletRequest request) {
+        Long currentUserId = userService.getCurrentLoginUser(request).getId();
+        // 获取用户管理（是队长）的队伍
+        LambdaQueryWrapper<Team> teamLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        teamLambdaQueryWrapper.eq(Team::getUserId, currentUserId);
+        List<Team> teamList = list(teamLambdaQueryWrapper);
+        // 获取队伍信息
+        List<TeamUserVO> teamUserVOList = new ArrayList<>();
+        for (Team team : teamList) {
+            TeamUserVO teamUserVO = getTeamUserVOById(team.getId());
+            teamUserVOList.add(teamUserVO);
+        }
+        return teamUserVOList;
+    }
+
+    @Override
+    public List<TeamUserVO> getJoinedTeams(HttpServletRequest request) {
+        Long currentUserId = userService.getCurrentLoginUser(request).getId();
+        // 获取用户加入的队伍
+        LambdaQueryWrapper<TeamUser> teamUserLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        teamUserLambdaQueryWrapper.eq(TeamUser::getUserId, currentUserId);
+        List<TeamUser> teamList = teamUserService.list(teamUserLambdaQueryWrapper);
+        // 获取队伍信息
+        List<TeamUserVO> teamUserVOList = new ArrayList<>();
+        for (TeamUser teamUser : teamList) {
+            TeamUserVO teamUserVO = getTeamUserVOById(teamUser.getTeamId());
+            teamUserVOList.add(teamUserVO);
+        }
+        return teamUserVOList;
     }
 
     /**
