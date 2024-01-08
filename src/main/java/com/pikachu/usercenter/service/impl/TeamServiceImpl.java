@@ -314,6 +314,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             TeamUserVO teamUserVO = getTeamUserVOById(teamUser.getTeamId());
             teamUserVOList.add(teamUserVO);
         }
+        teamUserVOList = teamUserVOList.stream().filter(teamUserVO -> !teamUserVO.getUserId().equals(currentUserId)).toList();
         return teamUserVOList;
     }
 
