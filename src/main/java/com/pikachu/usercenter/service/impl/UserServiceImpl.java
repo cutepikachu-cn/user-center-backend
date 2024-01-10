@@ -1,5 +1,6 @@
 package com.pikachu.usercenter.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -12,20 +13,23 @@ import com.pikachu.usercenter.model.enums.ResponseCode;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
 import com.pikachu.usercenter.model.vo.UserVO;
 import com.pikachu.usercenter.service.UserService;
+import com.pikachu.usercenter.utils.AlgorithmUtils;
 import com.pikachu.usercenter.utils.Tools;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -255,6 +259,54 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new RuntimeException(e);
         }
         session.setAttribute(USER_LOGIN_STATE, currentUser);
+    }
+
+    @Override
+    public List<UserVO> matchUsers(Integer num, HttpServletRequest request) {
+        /**
+         * 方法一
+         * 直接取出所有用户使用编辑距离算法进行排序
+         * 缺点：效率极低
+         */
+
+        // 方法二
+        LoginUserVO curUser = getCurrentLoginUser(request);
+        LambdaQueryWrapper<User> qr = new LambdaQueryWrapper<>();
+        // 只查询用户id和标签字段
+        qr.select(User::getId, User::getTags);
+        // 筛除无标签用户
+        qr.isNotNull(User::getTags);
+        qr.ne(User::getTags, "");
+        // 筛除当前登录用户自己
+        qr.ne(User::getId, curUser.getId());
+
+        List<User> userList = list(qr);
+        List<String> curUserTags = curUser.getTags();
+
+        // 用户id-编辑距离List
+        List<Map.Entry<Long, Integer>> userIdDistanceList = new ArrayList<>();
+        for (User user : userList) {
+            List<String> tags = user.getTags();
+
+            // 筛除无标签用户及用户自己
+            // if (CollectionUtils.isEmpty(tags) || Objects.equals(curUser.getId(), user.getId())) {
+            //     continue;
+            // }
+
+            // 计算编辑距离
+            Integer distance = AlgorithmUtils.minDistance(curUserTags, tags);
+
+            userIdDistanceList.add(Map.entry(user.getId(), distance));
+        }
+        // 排序
+        List<Map.Entry<Long, Integer>> sortedList = userIdDistanceList.stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).toList();
+        sortedList = sortedList.subList(0, Math.min(num, sortedList.size()));
+
+        List<Long> userIdList = sortedList.stream().map(Map.Entry::getKey).toList();
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.in("id", userIdList);
+        List<UserVO> userVOList = listUserVO(userQueryWrapper);
+        return userVOList;
     }
 
 }

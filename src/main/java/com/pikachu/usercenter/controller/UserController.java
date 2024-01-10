@@ -1,10 +1,12 @@
 package com.pikachu.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.pikachu.usercenter.exception.BusinessException;
 import com.pikachu.usercenter.model.dto.request.UserLoginRequest;
 import com.pikachu.usercenter.model.dto.request.UserRegisterRequest;
 import com.pikachu.usercenter.model.dto.request.UserUpdateRequest;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
+import com.pikachu.usercenter.model.enums.ResponseCode;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
 import com.pikachu.usercenter.model.vo.UserVO;
 import com.pikachu.usercenter.service.UserService;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -90,7 +93,15 @@ public class UserController {
 
         userService.updateUser(userUpdateRequest, request);
         LoginUserVO currentUser = userService.getCurrentLoginUser(request);
-        ;
         return ResultUtils.success(currentUser, "修改用户信息成功");
+    }
+
+    @GetMapping("/match")
+    public BaseResponse<?> matchUsers(@RequestParam(defaultValue = "5") Integer num, HttpServletRequest request) {
+        if (num >= 10 || num <= 0) {
+            throw new BusinessException(ResponseCode.PARAMS_ERROR, "超出限制");
+        }
+        List<UserVO> matchedUsers = userService.matchUsers(num, request);
+        return ResultUtils.success(matchedUsers);
     }
 }

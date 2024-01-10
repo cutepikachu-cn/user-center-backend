@@ -5,7 +5,7 @@ spring:
     active: dev
   # 数据库配置
   datasource:
-    driver-class-name:
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url:
     username:
     password:
@@ -32,8 +32,6 @@ mybatis-plus:
       logic-delete-field: isDelete # 全局逻辑删除的实体字段名
       logic-delete-value: true # 逻辑已删除值(默认为 1)
       logic-not-delete-value: false # 逻辑未删除值(默认为 0)
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath*:/mapper/**/*Mapper.xml
   type-aliases-package: com.pikachu.usercenter.model.domain
   type-handlers-package: com.pikachu.usercenter.typehandler

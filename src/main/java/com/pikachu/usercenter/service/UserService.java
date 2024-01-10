@@ -37,6 +37,12 @@ public interface UserService extends IService<User> {
      */
     LoginUserVO userLogin(String account, String password, HttpServletRequest request);
 
+    /**
+     * 获取当前登录的用户
+     *
+     * @param request
+     * @return
+     */
     LoginUserVO getCurrentLoginUser(HttpServletRequest request);
 
 
@@ -72,9 +78,29 @@ public interface UserService extends IService<User> {
      */
     UserVO getUserVOById(Long id);
 
+    /**
+     * 查询用户列表
+     * 返回UserVO
+     * @param queryWrapper
+     * @return
+     */
     List<UserVO> listUserVO(QueryWrapper<User> queryWrapper);
 
+    /**
+     * 更新用户信息
+     * @param userUpdateRequest
+     * @param request
+     */
     @Transactional
     void updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
+
+    /**
+     * 匹配用户
+     *
+     * @param num     匹配出的用户个数
+     * @param request
+     * @return
+     */
+    List<UserVO> matchUsers(Integer num, HttpServletRequest request);
 
 }
