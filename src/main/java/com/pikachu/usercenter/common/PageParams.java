@@ -7,6 +7,8 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
+ * 分页请求参数封装类
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

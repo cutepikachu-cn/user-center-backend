@@ -3,6 +3,7 @@ package com.pikachu.usercenter.model.enums;
 import lombok.Getter;
 
 /**
+ * 相应状态码枚举类
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

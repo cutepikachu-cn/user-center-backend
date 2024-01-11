@@ -38,6 +38,12 @@ public class UserController {
     @Resource
     private UserService userService;
 
+    /**
+     * 用户注册
+     *
+     * @param userRegisterRequest 用户注册参数对象
+     * @return
+     */
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody @Valid UserRegisterRequest userRegisterRequest) {
         String account = userRegisterRequest.getAccount();
@@ -47,6 +53,13 @@ public class UserController {
         return ResultUtils.success(newUserId, "注册成功");
     }
 
+    /**
+     * 用户登录
+     *
+     * @param userLoginRequest 用户登录参数对象
+     * @param request
+     * @return
+     */
     @PostMapping("/login")
     public BaseResponse<LoginUserVO> userLogin(@RequestBody @Valid UserLoginRequest userLoginRequest,
                                                HttpServletRequest request) {
@@ -57,12 +70,24 @@ public class UserController {
         return ResultUtils.success(user, "登陆成功");
     }
 
+    /**
+     * 用户退出登录
+     *
+     * @param request
+     * @return
+     */
     @PostMapping("/logout")
     public BaseResponse<?> userLogout(HttpServletRequest request) {
         userService.userLogout(request);
         return ResultUtils.success(true, "退出登录成功");
     }
 
+    /**
+     * 获取当前登录用户信息
+     *
+     * @param request
+     * @return
+     */
     @GetMapping("/current")
     public BaseResponse<LoginUserVO> getCurrentUser(HttpServletRequest request) {
         LoginUserVO user = userService.getCurrentLoginUser(request);
@@ -70,6 +95,15 @@ public class UserController {
         return ResultUtils.success(user, "当前用户");
     }
 
+    /**
+     * 搜索用户
+     *
+     * @param nickname 用于搜索的昵称
+     * @param tags     用于搜索的标签列表
+     * @param current  页数
+     * @param size     每页记录数
+     * @return
+     */
     @GetMapping("/search")
     public BaseResponse<IPage<UserVO>> searchUsers(String nickname,
                                                    String[] tags,
@@ -87,6 +121,13 @@ public class UserController {
         return ResultUtils.success(userPage);
     }
 
+    /**
+     * 更新用户信息
+     *
+     * @param userUpdateRequest 更新用户信息参数对象
+     * @param request
+     * @return
+     */
     @PutMapping("/update")
     public BaseResponse<LoginUserVO> updateUser(@RequestBody @Valid UserUpdateRequest userUpdateRequest,
                                                 HttpServletRequest request) {
@@ -96,6 +137,13 @@ public class UserController {
         return ResultUtils.success(currentUser, "修改用户信息成功");
     }
 
+    /**
+     * 匹配用户
+     *
+     * @param num     匹配个数
+     * @param request
+     * @return
+     */
     @GetMapping("/match")
     public BaseResponse<?> matchUsers(@RequestParam(defaultValue = "5") Integer num, HttpServletRequest request) {
         if (num >= 10 || num <= 0) {

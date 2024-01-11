@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 队伍视图对象
+ * 队伍信息视图对象
  *
  * @author 笨蛋皮卡丘
  * @version 1.0

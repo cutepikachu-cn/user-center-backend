@@ -1,6 +1,8 @@
 package com.pikachu.usercenter.constant;
 
 /**
+ * 常量配置
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */
@@ -10,6 +12,10 @@ public interface UserConstant {
      */
     String USER_LOGIN_STATE = "userLoginState";
 
+
+    /**
+     * 用户角色常量
+     */
     int ROLE_DEFAULT = 0, ROLE_ADMIN = 1;
 
     /**

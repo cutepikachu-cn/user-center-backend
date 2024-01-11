@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 /**
+ * 加入队伍请求参数
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

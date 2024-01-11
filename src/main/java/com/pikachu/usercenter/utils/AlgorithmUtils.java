@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * 算法工具类
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */
@@ -11,10 +13,13 @@ public class AlgorithmUtils {
 
     /**
      * 编辑距离算法
-     * 计算两个字符串相似度
+     * 原用法：计算两个字符串相似度
+     * 由 word1 到达 word2 需要进行的最少增删草操作次数
+     * <p>
+     * 计算两个标签列表相似度
      *
-     * @param tagList1
-     * @param tagList2
+     * @param tagList1 标签列表1
+     * @param tagList2 标签列表2
      * @return
      */
     public static int minDistance(List<String> tagList1, List<String> tagList2) {

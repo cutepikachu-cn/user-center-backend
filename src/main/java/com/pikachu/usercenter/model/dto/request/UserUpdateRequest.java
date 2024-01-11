@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
+ * 更新用户信息请求参数
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

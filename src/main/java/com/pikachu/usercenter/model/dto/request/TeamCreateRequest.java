@@ -14,6 +14,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * 创建队伍请求参数
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

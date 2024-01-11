@@ -9,6 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
 /**
+ * Redisson 配置
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

@@ -11,6 +11,8 @@ import static com.pikachu.usercenter.constant.UserConstant.ROLE_ADMIN;
 import static com.pikachu.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
+ * 身份验证拦截器
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

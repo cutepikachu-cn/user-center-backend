@@ -13,6 +13,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 /**
+ * Web应用配置
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */
@@ -32,6 +34,10 @@ public class WebConfiguration implements WebMvcConfigurer {
             "http://localhost:[*]"
     };
 
+
+    /**
+     * 鉴权拦截器配置
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new LoginInterceptor())
@@ -58,6 +64,9 @@ public class WebConfiguration implements WebMvcConfigurer {
     //             .allowedMethods("*");
     // }
 
+    /**
+     * 跨域过滤器配置
+     */
     @Bean
     public CorsFilter corsFilter() {
 

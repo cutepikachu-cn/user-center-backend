@@ -13,6 +13,9 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
+ * entity-jdbc 类型转换处理器
+ * 处理 Java 的 List<String> 类型与 JDBC 以 ',' 分割的 VARCHAR 类型互转
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

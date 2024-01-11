@@ -27,6 +27,13 @@ public class TeamController {
     @Resource
     private TeamService teamService;
 
+    /**
+     * 创建队伍
+     *
+     * @param teamCreateRequest 创建队伍请求参数对象
+     * @param request
+     * @return
+     */
     @PostMapping("/create")
     public BaseResponse<TeamUserVO> createTeam(@RequestBody @Valid TeamCreateRequest teamCreateRequest,
                                                HttpServletRequest request) {
@@ -34,6 +41,13 @@ public class TeamController {
         return ResultUtils.success(newTeam, "创建队伍成功");
     }
 
+    /**
+     * 解散队伍
+     *
+     * @param teamId  队伍id
+     * @param request
+     * @return
+     */
     @DeleteMapping("/dismiss")
     public BaseResponse<?> dismissTeam(@RequestParam Long teamId,
                                        HttpServletRequest request) {
@@ -41,6 +55,13 @@ public class TeamController {
         return ResultUtils.success(true, "解散队伍成功");
     }
 
+    /**
+     * 更新队伍信息
+     *
+     * @param teamUpdateRequest 更新队伍信息请求对象
+     * @param request
+     * @return
+     */
     @PutMapping("/update")
     public BaseResponse<TeamUserVO> updateTeam(@RequestBody @Valid TeamUpdateRequest teamUpdateRequest,
                                                HttpServletRequest request) {
@@ -48,12 +69,25 @@ public class TeamController {
         return ResultUtils.success(team, "修改队伍信息成功");
     }
 
+    /**
+     * 获取指定队伍信息
+     *
+     * @param teamId 队伍id
+     * @return
+     */
     @GetMapping("/get")
     public BaseResponse<TeamUserVO> getTeam(@RequestParam Long teamId) {
         TeamUserVO team = teamService.getTeamUserVOById(teamId);
         return ResultUtils.success(team, "获取队伍信息成功");
     }
 
+    /**
+     * 搜索队伍
+     * @param keyword 搜索关键词
+     * @param current 页数
+     * @param size 每页记录数
+     * @return
+     */
     @GetMapping("/search")
     public BaseResponse<IPage<TeamUserVO>> searchTeam(@RequestParam(required = false) String keyword,
                                                       @RequestParam(defaultValue = "1") Long current,
@@ -62,6 +96,12 @@ public class TeamController {
         return ResultUtils.success(teamUserVOIPage);
     }
 
+    /**
+     * 加入队伍
+     * @param teamJoinRequest 加入队伍请求参数对象
+     * @param request
+     * @return
+     */
     @PostMapping("/join")
     public BaseResponse<?> joinTeam(@RequestBody @Valid TeamJoinRequest teamJoinRequest,
                                     HttpServletRequest request) {
@@ -71,6 +111,12 @@ public class TeamController {
         return ResultUtils.success(true, "加入队伍成功");
     }
 
+    /**
+     * 退出队伍
+     * @param teamId 队伍id
+     * @param request
+     * @return
+     */
     @DeleteMapping("/exit")
     public BaseResponse<?> exitTeam(@RequestParam Long teamId,
                                     HttpServletRequest request) {
@@ -78,6 +124,13 @@ public class TeamController {
         return ResultUtils.success(true, "退出队伍成功");
     }
 
+    /**
+     * 转让队长
+     * @param teamId 队伍id
+     * @param userId 转让接受方用户id
+     * @param request
+     * @return
+     */
     @PostMapping("/transfer")
     public BaseResponse<?> transferTeam(@RequestParam Long teamId,
                                         @RequestParam Long userId,
@@ -86,12 +139,22 @@ public class TeamController {
         return ResultUtils.success(true, "转让队伍成功");
     }
 
+    /**
+     * 获取当前用户管理（为队长）的队伍
+     * @param request
+     * @return
+     */
     @GetMapping("/my/manage")
     public BaseResponse<List<TeamUserVO>> listMyManageTeams(HttpServletRequest request) {
         List<TeamUserVO> manageTeams = teamService.getManageTeams(request);
         return ResultUtils.success(manageTeams);
     }
 
+    /**
+     * 获取用户加入的队伍
+     * @param request
+     * @return
+     */
     @GetMapping("/my/join")
     public BaseResponse<List<TeamUserVO>> listMyJoinedTeams(HttpServletRequest request) {
         List<TeamUserVO> joinedTeams = teamService.getJoinedTeams(request);

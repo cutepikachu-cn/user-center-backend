@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import static com.pikachu.usercenter.constant.UserConstant.SALT;
 
 /**
+ * 工具类
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

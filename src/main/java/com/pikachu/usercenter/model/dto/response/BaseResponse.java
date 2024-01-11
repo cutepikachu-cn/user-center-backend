@@ -7,6 +7,7 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
+ * 基础响应体对象类
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * 队伍状态枚举类
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

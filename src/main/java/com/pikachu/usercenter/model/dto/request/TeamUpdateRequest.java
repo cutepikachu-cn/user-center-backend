@@ -14,6 +14,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * 更新队伍信息请求餐宿
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

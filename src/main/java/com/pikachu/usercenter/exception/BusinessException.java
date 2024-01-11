@@ -5,6 +5,8 @@ import com.pikachu.usercenter.model.enums.ResponseCode;
 import java.io.Serial;
 
 /**
+ * 业务异常类
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

@@ -4,6 +4,8 @@ import com.pikachu.usercenter.model.dto.response.BaseResponse;
 import com.pikachu.usercenter.model.enums.ResponseCode;
 
 /**
+ * 相应结果工具类
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */

@@ -33,7 +33,7 @@ public interface UserService extends IService<User> {
      *
      * @param account  账户
      * @param password 密码
-     * @return 脱敏后的用户信息对象
+     * @return 登录用户视图对象
      */
     LoginUserVO userLogin(String account, String password, HttpServletRequest request);
 
@@ -41,13 +41,15 @@ public interface UserService extends IService<User> {
      * 获取当前登录的用户
      *
      * @param request
-     * @return
+     * @return 登录用户视图对象
      */
     LoginUserVO getCurrentLoginUser(HttpServletRequest request);
 
 
     /**
      * 用户注销
+     *
+     * @param request
      */
     void userLogout(HttpServletRequest request);
 
@@ -81,6 +83,7 @@ public interface UserService extends IService<User> {
     /**
      * 查询用户列表
      * 返回UserVO
+     *
      * @param queryWrapper
      * @return
      */
@@ -88,6 +91,7 @@ public interface UserService extends IService<User> {
 
     /**
      * 更新用户信息
+     *
      * @param userUpdateRequest
      * @param request
      */

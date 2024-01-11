@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
+ * 全局异常处理
+ *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */
