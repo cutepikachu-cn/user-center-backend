@@ -178,7 +178,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         LambdaQueryWrapper<Team> teamLambdaQueryWrapper = new LambdaQueryWrapper<>();
 
         // 筛除私密 / 加密队伍
-        teamLambdaQueryWrapper.notIn(Team::getStatus, 1, 2);
+        teamLambdaQueryWrapper.notIn(Team::getStatus, 1);
         // 筛除已过期队伍
         teamLambdaQueryWrapper.gt(Team::getExpireTime, new Date());
 
