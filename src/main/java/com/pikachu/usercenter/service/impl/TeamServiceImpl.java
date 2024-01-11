@@ -26,6 +26,8 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 28944
@@ -49,110 +52,154 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     @Resource
     UserService userService;
 
+    @Resource
+    RedissonClient redissonClient;
+
 
     @Override
     public TeamUserVO createTeam(TeamCreateRequest teamCreateRequest, HttpServletRequest request) {
         // 队伍为当前登录的用户创建的
         Long currentUserId = userService.getCurrentLoginUser(request).getId();
         teamCreateRequest.setUserId(currentUserId);
-        // 创建队伍对象
-        Team team;
+
+        // 一个用户同时只能执行一个创建队伍任务
+        RLock userIdLock = redissonClient.getLock(String.format("user-center:team:userId-%d", currentUserId));
         try {
-            team = Team.fromTeamCreateRequest(teamCreateRequest);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+            if (!userIdLock.tryLock(0, 0, TimeUnit.MINUTES)) {
+                throw new BusinessException(ResponseCode.OTHER, "操作过于频繁");
+            }
 
-        // 是否为私密队伍
-        TeamStatus teamStatus = TeamStatus.getEnumByValue(team.getStatus());
-        if (TeamStatus.SECRET.equals(teamStatus)) {
-            String encryptPassword = Tools.encrypString(team.getPassword());
-            team.setPassword(encryptPassword);
-        }
-
-        // 存储队伍信息
-        if (!save(team)) {
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "创建队伍失败");
-        }
-
-        // 添加队伍~队员关系
-        TeamUser teamUser = new TeamUser();
-        teamUser.setTeamId(team.getId());
-        teamUser.setUserId(currentUserId);
-        if (!teamUserService.save(teamUser)) {
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "创建队伍失败");
-        }
-
-        return getTeamUserVOById(team.getId());
-    }
-
-    @Override
-    public void dismissTeam(Long teamId, HttpServletRequest request) {
-        // 获取要解散的队伍
-        Team team = getTeamIfExist(teamId);
-
-        // 是否有权解散
-        // 只能解散自己的队伍
-        Long currentUserId = userService.getCurrentLoginUser(request).getId();
-        if (!isCaptain(team, currentUserId)) {
-            throw new BusinessException(ResponseCode.NO_AUTH, "仅队长可以解散队伍");
-        }
-
-        // 解散队伍
-        if (!removeById(teamId)) {
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "解散队伍失败");
-        }
-
-        // 删除用户~队伍关系表中的关系数据
-        QueryWrapper<TeamUser> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("team_id", teamId);
-        if (!teamUserService.remove(queryWrapper)) {
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "解散队伍失败");
-        }
-
-    }
-
-    @Override
-    public TeamUserVO updateTeam(TeamUpdateRequest teamUpdateRequest, HttpServletRequest request) {
-        // 要修改信息的队伍是否存在
-        Team team = getTeamIfExist(teamUpdateRequest.getId());
-
-        // 检查是否为自己的队伍
-        Long currentUserId = userService.getCurrentLoginUser(request).getId();
-        if (!isCaptain(team, currentUserId)) {
-            throw new BusinessException(ResponseCode.NO_AUTH, "仅队长可以更新队伍信息");
-        }
-
-        // 队伍人数不可少于当前队伍已有人数
-        if (teamUpdateRequest.getMaxNumber() != null
-                && getTeamMembers(team.getId()).size() > teamUpdateRequest.getMaxNumber()) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍最大人数不可少于当前队伍人数");
-        }
-
-        // 拷贝要修改的信息
-        try {
-            BeanUtils.copyProperties(team, teamUpdateRequest);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-
-        // 是否设置为了加密队伍
-        Integer status = team.getStatus();
-        if (status != null) {
-            TeamStatus teamStatus = TeamStatus.getEnumByValue(status);
+            // 创建队伍对象
+            Team team = Team.fromTeamCreateRequest(teamCreateRequest);
+            // 是否为私密队伍
+            TeamStatus teamStatus = TeamStatus.getEnumByValue(team.getStatus());
             if (TeamStatus.SECRET.equals(teamStatus)) {
                 String encryptPassword = Tools.encrypString(team.getPassword());
                 team.setPassword(encryptPassword);
             }
-        }
 
-        // 更新队伍信息
-        if (!updateById(team)) {
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "修改队伍信息失败");
-        }
+            // 存储队伍信息
+            if (!save(team)) {
+                throw new BusinessException(ResponseCode.SYSTEM_ERROR, "创建队伍失败");
+            }
 
-        // 返回修改后的队伍信息
-        return getTeamUserVOById(team.getId());
+            // 添加队伍~队员关系
+            TeamUser teamUser = new TeamUser();
+            teamUser.setTeamId(team.getId());
+            teamUser.setUserId(currentUserId);
+            if (!teamUserService.save(teamUser)) {
+                throw new BusinessException(ResponseCode.SYSTEM_ERROR, "创建队伍失败");
+            }
+
+            return getTeamUserVOById(team.getId());
+        } catch (InterruptedException | InvocationTargetException | IllegalAccessException e) {
+            throw new BusinessException(ResponseCode.OTHER, "创建队伍失败");
+        } finally {
+            if (userIdLock.isHeldByCurrentThread()) {
+                userIdLock.unlock();
+            }
+        }
+    }
+
+    @Override
+    public void dismissTeam(Long teamId, HttpServletRequest request) {
+        RLock teamIdLock = redissonClient.getLock(String.format("user-center:team:teamId-%d", teamId));
+        try {
+            if (!teamIdLock.tryLock(0, 0, TimeUnit.MINUTES)) {
+                throw new BusinessException(ResponseCode.OTHER, "操作过于频繁");
+            }
+
+            // 获取要解散的队伍
+            Team team = getTeamIfExist(teamId);
+            // 是否有权解散
+            // 只能解散自己的队伍
+            Long currentUserId = userService.getCurrentLoginUser(request).getId();
+            if (!isCaptain(team, currentUserId)) {
+                throw new BusinessException(ResponseCode.NO_AUTH, "仅队长可以解散队伍");
+            }
+
+            // 解散队伍
+            if (!removeById(teamId)) {
+                throw new BusinessException(ResponseCode.SYSTEM_ERROR, "解散队伍失败");
+            }
+
+            // 删除用户~队伍关系表中的关系数据
+            QueryWrapper<TeamUser> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("team_id", teamId);
+            if (!teamUserService.remove(queryWrapper)) {
+                throw new BusinessException(ResponseCode.SYSTEM_ERROR, "解散队伍失败");
+            }
+        } catch (InterruptedException e) {
+            throw new BusinessException(ResponseCode.OTHER, "解散队伍失败");
+        } finally {
+            if (teamIdLock.isHeldByCurrentThread()) {
+                teamIdLock.unlock();
+            }
+        }
+    }
+
+    @Override
+    public TeamUserVO updateTeam(TeamUpdateRequest teamUpdateRequest, HttpServletRequest request) {
+        RLock teamIdLock = redissonClient.getLock(String.format("user-center:team:teamId-%d", teamUpdateRequest.getId()));
+        RLock userIdLock = null;
+        try {
+            for (int i = 0; i < 10; i++) {
+                if (teamIdLock.tryLock(0, 0, TimeUnit.MINUTES)) {
+                    break;
+                }
+                if (i == 9) {
+                    throw new BusinessException(ResponseCode.OTHER, "加入队伍失败");
+                }
+            }
+            // 要修改信息的队伍是否存在
+            Team team = getTeamIfExist(teamUpdateRequest.getId());
+
+            // 检查是否为自己的队伍
+            Long currentUserId = userService.getCurrentLoginUser(request).getId();
+            userIdLock = redissonClient.getLock(String.format("user-center:team:userId-%d", currentUserId));
+            if (!userIdLock.tryLock(0, 0, TimeUnit.MINUTES)) {
+                throw new BusinessException(ResponseCode.OTHER, "操作过于频繁");
+            }
+
+            if (!isCaptain(team, currentUserId)) {
+                throw new BusinessException(ResponseCode.NO_AUTH, "仅队长可以更新队伍信息");
+            }
+
+            // 队伍人数不可少于当前队伍已有人数
+            if (teamUpdateRequest.getMaxNumber() != null
+                    && getTeamMembers(team.getId()).size() > teamUpdateRequest.getMaxNumber()) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍最大人数不可少于当前队伍人数");
+            }
+
+            // 拷贝要修改的信息
+            BeanUtils.copyProperties(team, teamUpdateRequest);
+            // 是否设置为了加密队伍
+            Integer status = team.getStatus();
+            if (status != null) {
+                TeamStatus teamStatus = TeamStatus.getEnumByValue(status);
+                if (TeamStatus.SECRET.equals(teamStatus)) {
+                    String encryptPassword = Tools.encrypString(team.getPassword());
+                    team.setPassword(encryptPassword);
+                }
+            }
+
+            // 更新队伍信息
+            if (!updateById(team)) {
+                throw new BusinessException(ResponseCode.SYSTEM_ERROR, "修改队伍信息失败");
+            }
+
+            // 返回修改后的队伍信息
+            return getTeamUserVOById(team.getId());
+        } catch (InterruptedException | InvocationTargetException | IllegalAccessException e) {
+            throw new BusinessException(ResponseCode.OTHER, "修改队伍信息失败");
+        } finally {
+            if (teamIdLock.isHeldByCurrentThread()) {
+                teamIdLock.unlock();
+            }
+            if (userIdLock != null && userIdLock.isHeldByCurrentThread()) {
+                userIdLock.unlock();
+            }
+        }
     }
 
     @Override
@@ -196,73 +243,123 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
 
     @Override
     public void joinTeam(Long teamId, String password, HttpServletRequest request) {
+        // 加锁，防止多次并发执行，造成重复脏数据
+        // 防止多个用户同时加入同一队伍造成超员，锁 teamId
+        // 防止同一用户多次加入同一队伍，锁 userId
+        // 防止同一用户同时加入多个队伍，锁 userId
 
         // 查询队伍是否存在
         Team team = getTeamIfExist(teamId);
 
-        // 查询是否已加入
-        LoginUserVO currentUser = userService.getCurrentLoginUser(request);
-        List<TeamUser> members =
-                teamUserService.list(new QueryWrapper<TeamUser>().eq("team_id", teamId));
-        for (TeamUser member : members) {
-            if (member.getUserId().equals(currentUser.getId())) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "已在队伍中");
+        // 获取锁
+        // 锁 teamId
+        RLock teamIdlock = redissonClient.getLock(String.format("user-center:team:teamId-%d", teamId));
+        // 锁 userId
+        RLock userIdLock = null;
+        try {
+            // 最多抢 teamId 锁 10 次
+            for (int i = 0; i < 10; i++) {
+                if (teamIdlock.tryLock(0, 0, TimeUnit.MINUTES)) {
+                    break;
+                }
+                if (i == 9) {
+                    throw new BusinessException(ResponseCode.OTHER, "加入队伍失败");
+                }
             }
-        }
 
-        // 队伍是否再有效期内
-        if (team.getExpireTime().before(new Date())) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "组队有效期已过");
-        }
+            // 锁 userId
+            LoginUserVO curUser = userService.getCurrentLoginUser(request);
+            userIdLock = redissonClient.getLock(String.format("user-center:team:userId-%d", curUser.getId()));
 
-        // 队伍是否满员
-        if (isTeamFull(team, members)) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍已满员");
-        }
-
-        // 是否为加密队伍
-        TeamStatus teamStatus = TeamStatus.getEnumByValue(team.getStatus());
-        if (TeamStatus.SECRET.equals(teamStatus)) {
-            if (StringUtils.isBlank(password)) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "密码错误");
+            if (!userIdLock.tryLock(0, 0, TimeUnit.MINUTES)) {
+                throw new BusinessException(ResponseCode.OTHER, "操作过于频繁");
             }
-            String encryptPassword = Tools.encrypString(password);
-            if (!encryptPassword.equals(team.getPassword())) {
-                throw new BusinessException(ResponseCode.PARAMS_ERROR, "密码错误");
-            }
-        } else if (TeamStatus.PRIVATE.equals(teamStatus)) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "无法加入私密队伍");
-        }
 
-        // 在队伍~用户关系表添加字段
-        TeamUser teamUser = new TeamUser();
-        teamUser.setTeamId(teamId);
-        teamUser.setUserId(currentUser.getId());
-        if (!teamUserService.save(teamUser)) {
-            throw new BusinessException(ResponseCode.SYSTEM_ERROR, "加入队伍失败");
+            // 查询是否已加入
+            List<TeamUser> members =
+                    teamUserService.list(new QueryWrapper<TeamUser>().eq("team_id", teamId));
+            for (TeamUser member : members) {
+                if (member.getUserId().equals(curUser.getId())) {
+                    throw new BusinessException(ResponseCode.PARAMS_ERROR, "已在队伍中");
+                }
+            }
+
+            // 队伍是否再有效期内
+            if (team.getExpireTime().before(new Date())) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "组队有效期已过");
+            }
+
+            // 队伍是否满员
+            if (isTeamFull(team, members)) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍已满员");
+            }
+
+            // 是否为加密队伍
+            TeamStatus teamStatus = TeamStatus.getEnumByValue(team.getStatus());
+            if (TeamStatus.SECRET.equals(teamStatus)) {
+                if (StringUtils.isBlank(password)) {
+                    throw new BusinessException(ResponseCode.PARAMS_ERROR, "密码错误");
+                }
+                String encryptPassword = Tools.encrypString(password);
+                if (!encryptPassword.equals(team.getPassword())) {
+                    throw new BusinessException(ResponseCode.PARAMS_ERROR, "密码错误");
+                }
+            } else if (TeamStatus.PRIVATE.equals(teamStatus)) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "无法加入私密队伍");
+            }
+
+            // 在队伍~用户关系表添加字段
+            TeamUser teamUser = new TeamUser();
+            teamUser.setTeamId(teamId);
+            teamUser.setUserId(curUser.getId());
+            if (!teamUserService.save(teamUser)) {
+                throw new BusinessException(ResponseCode.SYSTEM_ERROR, "加入队伍失败");
+            }
+
+        } catch (InterruptedException e) {
+            throw new BusinessException(ResponseCode.OTHER, "加入队伍失败");
+        } finally {
+            if (teamIdlock.isHeldByCurrentThread()) {
+                teamIdlock.unlock();
+            }
+            if (userIdLock != null && userIdLock.isHeldByCurrentThread()) {
+                userIdLock.unlock();
+            }
         }
 
     }
 
     @Override
     public void exitTeam(Long teamId, HttpServletRequest request) {
-        // 判断队伍是否存在
-        Team team = getTeamIfExist(teamId);
+        RLock userIdLock = redissonClient.getLock(String.format("user-center:team:userId-%d", teamId));
+        try {
+            if (!userIdLock.tryLock(0, 0, TimeUnit.MINUTES)) {
+                throw new BusinessException(ResponseCode.OTHER, "操作过于频繁");
+            }
 
-        // 判断是否为队长
-        Long currentUserId = userService.getCurrentLoginUser(request).getId();
-        if (Objects.equals(team.getUserId(), currentUserId)) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "队长不可退出队伍");
+            // 判断队伍是否存在
+            Team team = getTeamIfExist(teamId);
+
+            // 判断是否为队长
+            Long currentUserId = userService.getCurrentLoginUser(request).getId();
+            if (Objects.equals(team.getUserId(), currentUserId)) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "队长不可退出队伍");
+            }
+
+            LambdaQueryWrapper<TeamUser> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(TeamUser::getUserId, currentUserId);
+            queryWrapper.eq(TeamUser::getTeamId, teamId);
+
+            if (!teamUserService.remove(queryWrapper)) {
+                throw new BusinessException(ResponseCode.PARAMS_ERROR, "退出队伍失败");
+            }
+        } catch (InterruptedException e) {
+            throw new BusinessException(ResponseCode.OTHER, "退出队伍失败");
+        } finally {
+            if (userIdLock.isHeldByCurrentThread()) {
+                userIdLock.unlock();
+            }
         }
-
-        LambdaQueryWrapper<TeamUser> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TeamUser::getUserId, currentUserId);
-        queryWrapper.eq(TeamUser::getTeamId, teamId);
-
-        if (!teamUserService.remove(queryWrapper)) {
-            throw new BusinessException(ResponseCode.PARAMS_ERROR, "退出队伍失败");
-        }
-
     }
 
     @Override

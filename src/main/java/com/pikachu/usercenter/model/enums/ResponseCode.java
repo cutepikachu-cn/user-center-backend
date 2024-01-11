@@ -9,6 +9,7 @@ import lombok.Getter;
 @Getter
 public enum ResponseCode {
     SUCCESS(0, "成功"),
+    OTHER(-1, "其它错误"),
     PARAMS_ERROR(40000, "参数错误"),
     NOT_LOGIN(40100, "未登录"),
     NO_AUTH(40101, "无权限"),
