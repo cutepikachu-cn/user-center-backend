@@ -15,7 +15,7 @@ create table if not exists user
     password    varchar(256) not null comment '密码',
     phone       varchar(256) comment '手机号',
     email       varchar(256) comment '邮箱',
-    status      tinyint      not null default 0 comment '是否有效（0：正常）',
+    status tinyint not null default 0 comment '用户状态（0：正常）',
     create_time datetime     not null default current_timestamp comment '创建时间',
     update_time timestamp    not null default current_timestamp on update current_timestamp comment '更新时间',
     is_delete   bit          not null default 0 comment '是否删除',

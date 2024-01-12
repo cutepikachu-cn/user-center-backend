@@ -3,7 +3,7 @@ package com.pikachu.usercenter.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.pikachu.usercenter.model.dto.request.UserUpdateRequest;
+import com.pikachu.usercenter.model.dto.request.user.UserUpdateRequest;
 import com.pikachu.usercenter.model.entity.User;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
 import com.pikachu.usercenter.model.vo.UserVO;
@@ -52,15 +52,6 @@ public interface UserService extends IService<User> {
      * @param request
      */
     void userLogout(HttpServletRequest request);
-
-    /**
-     * 查询用户列表（管理员操作）
-     *
-     * @param current  页码
-     * @param pageSize 每页条数
-     * @return 查询到的用户列表
-     */
-    IPage<User> pageUsers(Long current, Long pageSize);
 
     /**
      * 搜索用户列表（普通用户操作）

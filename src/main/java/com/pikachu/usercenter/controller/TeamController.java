@@ -1,9 +1,9 @@
 package com.pikachu.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
-import com.pikachu.usercenter.model.dto.request.TeamJoinRequest;
-import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
+import com.pikachu.usercenter.model.dto.request.team.TeamCreateRequest;
+import com.pikachu.usercenter.model.dto.request.team.TeamJoinRequest;
+import com.pikachu.usercenter.model.dto.request.team.TeamUpdateRequest;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
 import com.pikachu.usercenter.model.vo.TeamUserVO;
 import com.pikachu.usercenter.service.TeamService;

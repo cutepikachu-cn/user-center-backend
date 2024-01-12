@@ -2,9 +2,9 @@ package com.pikachu.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.pikachu.usercenter.exception.BusinessException;
-import com.pikachu.usercenter.model.dto.request.UserLoginRequest;
-import com.pikachu.usercenter.model.dto.request.UserRegisterRequest;
-import com.pikachu.usercenter.model.dto.request.UserUpdateRequest;
+import com.pikachu.usercenter.model.dto.request.user.UserLoginRequest;
+import com.pikachu.usercenter.model.dto.request.user.UserRegisterRequest;
+import com.pikachu.usercenter.model.dto.request.user.UserUpdateRequest;
 import com.pikachu.usercenter.model.dto.response.BaseResponse;
 import com.pikachu.usercenter.model.enums.ResponseCode;
 import com.pikachu.usercenter.model.vo.LoginUserVO;

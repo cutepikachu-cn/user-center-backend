@@ -23,7 +23,10 @@ import java.util.List;
 class UserServiceTest {
 
     @Resource
-    private UserService userService;
+    UserService userService;
+
+    @Resource
+    AdminService adminService;
 
     @Test
     void test() {
@@ -53,7 +56,7 @@ class UserServiceTest {
 
     @Test
     void pageUsers() {
-        IPage<User> users = userService.pageUsers(1L, 5L);
+        IPage<User> users = adminService.listUser(1L, 5L);
         Assertions.assertNotNull(users);
     }
 

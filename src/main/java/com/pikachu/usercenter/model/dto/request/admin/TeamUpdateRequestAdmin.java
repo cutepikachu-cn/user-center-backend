@@ -1,10 +1,9 @@
-package com.pikachu.usercenter.model.dto.request;
+package com.pikachu.usercenter.model.dto.request.admin;
 
 import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
@@ -14,17 +13,16 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 创建队伍请求参数
- *
  * @author 笨蛋皮卡丘
  * @version 1.0
  */
 @Data
-public class TeamCreateRequest implements Serializable {
+public class TeamUpdateRequestAdmin implements Serializable {
     @Serial
-    private static final long serialVersionUID = 2441414884967522068L;
+    private static final long serialVersionUID = 4304993347317680134L;
 
-    @NotBlank(message = "队伍名称不能为空")
+    @NotNull(message = "队伍id不能为空")
+    private Long id;
     @Length(min = 5, max = 20, message = "队伍名称长度为5~20")
     private String name;
     @Length(max = 512, message = "队伍长度为0~512")
@@ -40,11 +38,11 @@ public class TeamCreateRequest implements Serializable {
 
     @AssertTrue(message = "加密队伍必须设置密码（8~20位字母、数字、下划线或减号组合）")
     public boolean hasPassword() {
-        return status != 2 || (!StringUtils.isBlank(password) && password.matches("^[\\w-]{8,20}$"));
+        return status == null || status != 2 || (!StringUtils.isBlank(password) && password.matches("^[\\w-]{8,20}$"));
     }
 
-    @AssertTrue(message = "过期时间至少为一天")
+    @AssertTrue(message = "过期时间不能早于当前时间")
     public boolean isValidExpireTime() {
-        return expireTime.after(DateUtils.addDays(new Date(), 1));
+        return expireTime == null || expireTime.after(new Date());
     }
 }

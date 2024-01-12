@@ -1,4 +1,4 @@
-package com.pikachu.usercenter.model.dto.request;
+package com.pikachu.usercenter.model.dto.request.team;
 
 import jakarta.validation.constraints.Min;
 import lombok.Data;

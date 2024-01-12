@@ -1,14 +1,11 @@
 package com.pikachu.usercenter.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
 import com.pikachu.usercenter.typehandler.StringListTypeHandler;
 import lombok.Data;
-import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.List;
 
@@ -20,14 +17,6 @@ import java.util.List;
 @TableName(value = "team")
 @Data
 public class Team implements Serializable {
-
-    public static Team fromTeamCreateRequest(TeamCreateRequest teamCreateRequest) throws InvocationTargetException, IllegalAccessException {
-        Team team = new Team();
-        BeanUtils.copyProperties(team, teamCreateRequest);
-        team.setCreateUserId(team.getUserId());
-
-        return team;
-    }
 
     /**
      * id

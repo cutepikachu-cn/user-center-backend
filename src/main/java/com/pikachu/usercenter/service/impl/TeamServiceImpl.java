@@ -8,8 +8,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pikachu.usercenter.exception.BusinessException;
 import com.pikachu.usercenter.mapper.TeamMapper;
-import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
-import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
+import com.pikachu.usercenter.model.dto.request.team.TeamCreateRequest;
+import com.pikachu.usercenter.model.dto.request.team.TeamUpdateRequest;
 import com.pikachu.usercenter.model.entity.Team;
 import com.pikachu.usercenter.model.entity.TeamUser;
 import com.pikachu.usercenter.model.entity.User;
@@ -70,7 +70,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             }
 
             // 创建队伍对象
-            Team team = Team.fromTeamCreateRequest(teamCreateRequest);
+            Team team = TeamCreateRequest.toTeam(teamCreateRequest);
             // 是否为私密队伍
             TeamStatus teamStatus = TeamStatus.getEnumByValue(team.getStatus());
             if (TeamStatus.SECRET.equals(teamStatus)) {
@@ -423,13 +423,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         return team.getMaxNumber() == members.size();
     }
 
-    /**
-     * 根据队伍 id 查询队伍是否存在
-     *
-     * @param teamId 队伍 id
-     * @return
-     */
-    private Team getTeamIfExist(Long teamId) {
+    @Override
+    public Team getTeamIfExist(Long teamId) {
         Team team = getById(teamId);
         if (team == null) {
             throw new BusinessException(ResponseCode.PARAMS_ERROR, "队伍不存在");
@@ -443,7 +438,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      * @param teamId 队伍id
      * @return
      */
-    private List<UserVO> getTeamMembers(Long teamId) {
+    public List<UserVO> getTeamMembers(Long teamId) {
         // 查出队伍中所有队员的 id
         QueryWrapper<TeamUser> teamQueryWrapper = new QueryWrapper<>();
         teamQueryWrapper.eq("team_id", teamId);

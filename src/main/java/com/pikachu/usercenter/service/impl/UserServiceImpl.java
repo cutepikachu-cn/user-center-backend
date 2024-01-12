@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pikachu.usercenter.exception.BusinessException;
 import com.pikachu.usercenter.mapper.UserMapper;
-import com.pikachu.usercenter.model.dto.request.UserUpdateRequest;
+import com.pikachu.usercenter.model.dto.request.user.UserUpdateRequest;
 import com.pikachu.usercenter.model.entity.User;
 import com.pikachu.usercenter.model.enums.ResponseCode;
 import com.pikachu.usercenter.model.vo.LoginUserVO;
@@ -27,13 +27,11 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static com.pikachu.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -49,16 +47,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Resource
     private RedisTemplate<String, Page<User>> redisTemplate;
-
-    @Override
-    public boolean updateById(User entity) {
-        // 账户名 / 创建时间不可修改
-        entity.setAccount(null);
-        entity.setCreateTime(null);
-        // 修改时间为当前时间
-        entity.setUpdateTime(LocalDateTime.now());
-        return super.updateById(entity);
-    }
 
     @Override
     public Long userRegister(String account, String password) {
@@ -119,13 +107,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public void userLogout(HttpServletRequest request) {
         request.getSession().removeAttribute(USER_LOGIN_STATE);
-    }
-
-    @Override
-    public IPage<User> pageUsers(Long current, Long pageSize) {
-        Page<User> page = page(new Page<>(current, pageSize));
-        page.setRecords(page.getRecords().stream().peek(user -> user.setPassword(null)).collect(Collectors.toList()));
-        return page;
     }
 
     @Override
@@ -244,7 +225,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public void updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
         HttpSession session = request.getSession();
-        LoginUserVO currentUser = (LoginUserVO) session.getAttribute(USER_LOGIN_STATE);
+        LoginUserVO currentUser = getCurrentLoginUser(request);
         userUpdateRequest.setId(currentUser.getId());
         User user = new User();
         try {

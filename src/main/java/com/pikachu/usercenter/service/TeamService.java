@@ -2,10 +2,11 @@ package com.pikachu.usercenter.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.pikachu.usercenter.model.dto.request.TeamCreateRequest;
-import com.pikachu.usercenter.model.dto.request.TeamUpdateRequest;
+import com.pikachu.usercenter.model.dto.request.team.TeamCreateRequest;
+import com.pikachu.usercenter.model.dto.request.team.TeamUpdateRequest;
 import com.pikachu.usercenter.model.entity.Team;
 import com.pikachu.usercenter.model.vo.TeamUserVO;
+import com.pikachu.usercenter.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,5 +110,21 @@ public interface TeamService extends IService<Team> {
      * @return
      */
     List<TeamUserVO> getJoinedTeams(HttpServletRequest request);
+
+    /**
+     * 根据队伍 id 查询队伍是否存在
+     *
+     * @param teamId 队伍 id
+     * @return
+     */
+    Team getTeamIfExist(Long teamId);
+
+    /**
+     * 根据队伍 id 获取队员信息
+     *
+     * @param teamId 队伍id
+     * @return
+     */
+    public List<UserVO> getTeamMembers(Long teamId);
 
 }

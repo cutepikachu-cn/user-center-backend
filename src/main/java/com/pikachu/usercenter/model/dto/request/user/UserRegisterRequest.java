@@ -1,4 +1,4 @@
-package com.pikachu.usercenter.model.dto.request;
+package com.pikachu.usercenter.model.dto.request.user;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Pattern;
