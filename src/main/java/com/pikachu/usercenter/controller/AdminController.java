@@ -49,4 +49,15 @@ public class AdminController {
         return ResultUtils.success(newTeam);
     }
 
+    @DeleteMapping("/user/delete")
+    public BaseResponse<?> deleteUser(@RequestParam Long userId) {
+        adminService.deleteUser(userId);
+        return ResultUtils.success(true);
+    }
+
+    @DeleteMapping("/team/delete")
+    public BaseResponse<?> deleteTeam(@RequestParam Long teamId) {
+        adminService.deleteTeam(teamId);
+        return ResultUtils.success(true);
+    }
 }

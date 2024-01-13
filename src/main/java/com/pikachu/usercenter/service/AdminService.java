@@ -5,6 +5,7 @@ import com.pikachu.usercenter.model.dto.request.admin.TeamUpdateRequestAdmin;
 import com.pikachu.usercenter.model.dto.request.admin.UserUpdateRequestAdmin;
 import com.pikachu.usercenter.model.entity.Team;
 import com.pikachu.usercenter.model.entity.User;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 管理员服务
@@ -31,7 +32,15 @@ public interface AdminService {
      */
     IPage<Team> listTeam(Long current, Long size);
 
+    @Transactional
     User updateUser(UserUpdateRequestAdmin params);
 
+    @Transactional
     Team updateTeam(TeamUpdateRequestAdmin params);
+
+    @Transactional
+    void deleteUser(Long userId);
+
+    @Transactional
+    void deleteTeam(Long TeamId);
 }
