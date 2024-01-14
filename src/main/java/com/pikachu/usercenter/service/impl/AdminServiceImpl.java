@@ -130,7 +130,7 @@ public class AdminServiceImpl implements AdminService {
             throw new BusinessException(ResponseCode.SYSTEM_ERROR, "修改队伍信息失败");
         }
 
-        removeListUserCache();
+        removeListTeamCache();
         return teamService.getById(team.getId());
     }
 
