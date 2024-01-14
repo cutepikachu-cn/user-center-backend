@@ -2,7 +2,9 @@ package com.pikachu.usercenter.config;
 
 import com.pikachu.usercenter.interceptor.AuthInterceptor;
 import com.pikachu.usercenter.interceptor.LoginInterceptor;
+import lombok.Data;
 import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -10,6 +12,7 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,20 +22,12 @@ import java.util.List;
  * @version 1.0
  */
 @SpringBootConfiguration
+@ConfigurationProperties(prefix = "web-config")
+@Data
 public class WebConfiguration implements WebMvcConfigurer {
-    private final String[] EXCLUDE_PATH_LOGIN = {
-            "/user/login",
-            "/user/register",
-            "/user/search",
-            "/team/search",
-            "/team/get"
-    };
-    private final String[] EXCLUDE_PATH_AUTH = {};
-    private final String[] CORS_ORIGINS = {
-            "http://*.cute-pikachu.cn",
-            "https://*.cute-pikachu.cn",
-            "http://localhost:[*]"
-    };
+    private String[] ExcludePathLogin;
+    private String[] ExcludePathAuth;
+    private String[] CorsOrigins;
 
 
     /**
@@ -42,10 +37,10 @@ public class WebConfiguration implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new LoginInterceptor())
                 .addPathPatterns("/user/**", "/admin/**", "/team/**")
-                .excludePathPatterns(EXCLUDE_PATH_LOGIN);
+                .excludePathPatterns(ExcludePathLogin);
         registry.addInterceptor(new AuthInterceptor())
                 .addPathPatterns("/admin/**")
-                .excludePathPatterns(EXCLUDE_PATH_AUTH);
+                .excludePathPatterns(ExcludePathAuth);
     }
 
     // @Override
@@ -74,7 +69,8 @@ public class WebConfiguration implements WebMvcConfigurer {
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowedMethods(List.of("*"));
-        corsConfiguration.setAllowedOriginPatterns(List.of(CORS_ORIGINS));
+        System.out.println(Arrays.toString(CorsOrigins));
+        corsConfiguration.setAllowedOriginPatterns(List.of(CorsOrigins));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);

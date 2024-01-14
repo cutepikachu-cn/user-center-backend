@@ -26,6 +26,17 @@ server:
         domain: localhost
       timeout: 1h
 
+web-config:
+  cors-origins:
+    - http://localhost:[*]
+  exclude-path-login:
+    - /user/login
+    - /user/register
+    - /user/search
+    - /team/search
+    - /team/get
+  exclude-path-auth:
+
 mybatis-plus:
   global-config:
     db-config:
